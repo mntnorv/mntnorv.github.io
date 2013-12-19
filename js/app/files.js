@@ -8,7 +8,18 @@ define(["app/projects", "app/repeat"], function (projects, repeat) {
         
         for (name in projects) {
             if (projects.hasOwnProperty(name)) {
-                content += name + ' - ' + projects[name].description + '\n';
+                if (name.length > maxWidth) {
+                    maxWidth = name.length;
+                }
+            }
+        }
+        
+        
+        for (name in projects) {
+            if (projects.hasOwnProperty(name)) {
+                content += name +
+                    repeat(' ', maxWidth - name.length) +
+                    ' - ' + projects[name].description + '\n';
             }
         }
         
