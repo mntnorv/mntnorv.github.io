@@ -14,16 +14,19 @@ define(["jquery", "app/projects"], function ($, projects) {
     
     function help(args, term) {
         var first = true,
-            message = '';
+            message = '',
+            name;
         
-        commands.forEach(function (e) {
-            if (!first) {
-                message += ', ' + e.name;
-            } else {
-                message += e.name;
-                first = false;
+        for (name in commands) {
+            if (commands.hasOwnProperty(name)) {
+                if (!first) {
+                    message += ', ' + name;
+                } else {
+                    message += name;
+                    first = false;
+                }
             }
-        });
+        }
         
         term.echo('Available commands:\n' + message + '\n');
     }
@@ -33,63 +36,63 @@ define(["jquery", "app/projects"], function ($, projects) {
     }
     
     function man(args, term) {
+        var command = commands[args[0]];
+        
+        if (command) {
+            term.echo('Usage: ' + command.usage + '\n' + command.description + '\n');
+        } else {
+            term.echo('man: command \'' + args[0] + '\' not found.\n');
+        }
     }
     
     function open(args, term) {
         var lowercaseName = args[0].toLowerCase(),
-            found = $.grep(projects, function (e) {
-                return e.name === lowercaseName;
-            }),
-            project;
+            project = projects[args[0]];
         
-        if (found.length === 0) {
+        if (project) {
+            term.echo('Opening ' + lowercaseName + ' (' + project.url + ')...\n');
+            window.open(project.url, '_blank');
+        } else {
             term.echo('open: project \'' + lowercaseName + '\' not found.\n');
+            return;
         }
-        
-        project = found[0];
-        term.echo('Opening ' + project.name + ' (' + project.url + ')...\n');
-        window.open(project.url, '_blank');
     }
     
     /*
     | Command definitions
     */
-    commands = [
-        {
-            name: 'cat',
-            description: 'Prints file contents',
+    commands = {
+        cat: {
+            description: 'Prints file contents.',
             usage: 'cat [file]',
             args: 1,
             callback: cat
         },
-        {
-            name: 'help',
-            description: 'Prints available commands',
+        help: {
+            description: 'Prints available commands.',
+            usage: 'help',
             args: 0,
             callback: help
         },
-        {
-            name: 'ls',
-            description: 'Lists files in the current directory',
+        ls: {
+            description: 'Lists files in the current directory.',
             usage: 'ls',
             args: 0,
             callback: ls
         },
-        {
-            name: 'man',
+        man: {
             description: 'Prints a short description and usage information about a command.',
             usage: 'man [command]',
             args: 1,
             callback: man
         },
-        {
-            name: 'open',
+        open: {
             description: 'Opens the project\'s GitHub repository in a new tab.',
             usage: 'open [project]',
             args: 1,
             callback: open
         }
-    ];
+    };
     
     return commands;
 });

@@ -23,14 +23,10 @@ define(["jquery", "app/commands", "jquery.mousewheel", "jquery.terminal"], funct
     $('#terminal').terminal(function (input, term) {
         var split   = input.split(" "),
             args    = split.slice(1),
-            command,
-            found;
+            command;
         
         if (input !== '') {
-            found = $.grep(commands, function (e) {
-                return e.name === split[0];
-            });
-            command = found[0];
+            command = commands[split[0]];
             
             if (command) {
                 if (command.args === undefined || command.args === args.length) {
