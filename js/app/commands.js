@@ -1,37 +1,28 @@
 /*jslint browser: true*/
 
-define(["jquery", "app/projects", "app/files"], function ($, projects, files) {
+define(["jquery", "app/projects", "app/files", "app/repeat"], function ($, projects, files, repeat) {
     "use strict";
     
     var commands = [];
-    
-    /*
-    | Helpers
-    */
-    
-    function repeat(pattern, count) {
-        /*jslint bitwise: true */
-        if (count < 1) {
-            return '';
-        }
-        
-        var result = '';
-        while (count > 0) {
-            if (count & 1) {
-                result += pattern;
-            }
-            count >>= 1;
-            pattern += pattern;
-        }
-        /*jslint bitwise: false */
-        return result;
-    }
     
     /*
     | Terminal command functions
     */
     
     function cat(args, term) {
+        var file = files[args[0]];
+        
+        if (file) {
+            if (typeof file.content === 'string') {
+                term.echo(file.content);
+            } else if (typeof file.content === 'function') {
+                term.echo(file.content.call());
+            } else {
+                term.echo('cat: ' + args[0] + ': file format not supported.\n');
+            }
+        } else {
+            term.echo('cat: ' + args[0] + ': no such file.\n');
+        }
     }
     
     function help(args, term) {
@@ -85,6 +76,7 @@ define(["jquery", "app/projects", "app/files"], function ($, projects, files) {
         for (i = 0; i < filesInCol + 1; i += 1) {
             output[i] = "";
         }
+        output[filesInCol + 1] = '';
         
         currentFile = 0;
         for (i = 0; i < filesInRow && currentFile < fileCount; i += 1) {
@@ -106,7 +98,7 @@ define(["jquery", "app/projects", "app/files"], function ($, projects, files) {
         if (command) {
             term.echo('Usage: ' + command.usage + '\n' + command.description + '\n');
         } else {
-            term.echo('man: command \'' + args[0] + '\' not found.\n');
+            term.echo('man: no manual entry for ' + args[0] + '.\n');
         }
     }
     

@@ -1,13 +1,14 @@
-define(["app/projects"], function (projects) {
+define(["app/projects", "app/repeat"], function (projects, repeat) {
     "use strict";
     
     function projectsContent() {
         var content = 'Projects:\n',
-            name;
+            name,
+            maxWidth = 0;
         
         for (name in projects) {
             if (projects.hasOwnProperty(name)) {
-                content += name + ' - ' + projects[name] + '\n';
+                content += name + ' - ' + projects[name].description + '\n';
             }
         }
         
@@ -16,7 +17,7 @@ define(["app/projects"], function (projects) {
     
     var files = {
         'about': {
-            content: 'Empty!'
+            content: 'Empty!\n'
         },
         'projects': {
             content: projectsContent

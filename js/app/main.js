@@ -35,7 +35,7 @@ define(["jquery", "app/commands", "jquery.mousewheel", "jquery.terminal"], funct
                     printUsage(command, term);
                 }
             } else {
-                term.echo('Unrecognised command: \'' + split[0] + '\'\n');
+                term.echo(split[0] + ': command not found\n');
             }
         }
     }, {
