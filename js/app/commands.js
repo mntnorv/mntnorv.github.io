@@ -6,6 +6,28 @@ define(["jquery", "app/projects", "app/files"], function ($, projects, files) {
     var commands = [];
     
     /*
+    | Helpers
+    */
+    
+    function repeat(pattern, count) {
+        /*jslint bitwise: true */
+        if (count < 1) {
+            return '';
+        }
+        
+        var result = '';
+        while (count > 0) {
+            if (count & 1) {
+                result += pattern;
+            }
+            count >>= 1;
+            pattern += pattern;
+        }
+        /*jslint bitwise: false */
+        return result;
+    }
+    
+    /*
     | Terminal command functions
     */
     
@@ -68,11 +90,10 @@ define(["jquery", "app/projects", "app/files"], function ($, projects, files) {
         for (i = 0; i < filesInRow && currentFile < fileCount; i += 1) {
             for (j = 0; j < (filesInCol + 1) && currentFile < fileCount; j += 1) {
                 if ((j < filesInCol) || (j === filesInCol && i < biggerCols)) {
-                    output[j] += filenames[currentFile] + "  ";
+                    output[j] += filenames[currentFile] +
+                        repeat(' ', colWidth - filenames[currentFile].length + 2);
                     currentFile += 1;
                 }
-                
-                term.echo(JSON.stringify(output));
             }
         }
         
