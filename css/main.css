@@ -7,7 +7,7 @@ body {
 }
 
 .terminal {
-	font-family: Consolas,courier,fixed;
+	font-family: Consolas, Monaco, courier, monospace;
 	font-size: 12px;
 	color: #33d011;
 	background: none;
