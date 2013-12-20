@@ -72,6 +72,10 @@ define(["jquery", "app/termSystem", "app/projects", "app/repeat"], function ($, 
         termSystem.state.currentDir = newPath;
     }
     
+    function clear(args, term) {
+        term.clear();
+    }
+    
     function pwd(args, term) {
         term.echo(termSystem.state.currentDir + '\n');
     }
@@ -221,6 +225,12 @@ define(["jquery", "app/termSystem", "app/projects", "app/repeat"], function ($, 
             usage: 'cd [[[u;;]path]]',
             args: 0,
             callback: cd
+        },
+        clear: {
+            description: 'Clears the screen.',
+            usage: 'clear',
+            args: 0,
+            callback: clear
         },
         help: {
             description: 'Prints available commands.',
