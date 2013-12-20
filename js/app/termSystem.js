@@ -92,6 +92,7 @@ define(["app/files"], function (files) {
         var parsedPath,
             currentObject,
             lastPathElement,
+            mustBeDir = false,
             i;
         
         if (typeof path === 'string') {
@@ -125,12 +126,20 @@ define(["app/files"], function (files) {
         // Get the last path element
         lastPathElement = parsedPath[parsedPath.length - 1];
         
+        if (lastPathElement.charAt(lastPathElement.length - 1) === '/') {
+            mustBeDir = true;
+            lastPathElement = lastPathElement.substring(
+                0,
+                lastPathElement.length - 1
+            );
+        }
+            
         // It can be a directory or a file
         if (currentObject.dirs[lastPathElement]) {
             currentObject = currentObject.dirs[lastPathElement];
             currentObject.type = 'dir';
             return currentObject;
-        } else if (currentObject.files[lastPathElement]) {
+        } else if (!mustBeDir && currentObject.files[lastPathElement]) {
             currentObject = currentObject.files[lastPathElement];
             currentObject.type = 'file';
             return currentObject;

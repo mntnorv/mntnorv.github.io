@@ -10,18 +10,33 @@ define(["jquery", "app/termSystem", "app/projects", "app/repeat"], function ($, 
     */
     
     function cat(args, term) {
-        var file = files[args[0]];
+        var fsObject;
         
-        if (file) {
-            if (typeof file.content === 'string') {
-                term.echo(file.content);
-            } else if (typeof file.content === 'function') {
-                term.echo(file.content.call());
-            } else {
-                term.echo('cat: ' + args[0] + ': file format not supported.\n');
-            }
+        // Get the FS object
+        if (args[0]) {
+            fsObject = termSystem.getFsObject(
+                args[0]
+            );
         } else {
-            term.echo('cat: ' + args[0] + ': no such file.\n');
+            fsObject = termSystem.getFsObject(
+                termSystem.state.currentDir
+            );
+        }
+        
+        if (!fsObject) {
+            term.echo('cat: ' + args[0] + ': no such file or directory.\n');
+            return;
+        } else if (fsObject.type !== 'file') {
+            term.echo('cat: ' + args[0] + ': not a file. \n');
+            return;
+        }
+        
+        if (typeof fsObject.content === 'string') {
+            term.echo(fsObject.content);
+        } else if (typeof fsObject.content === 'function') {
+            term.echo(fsObject.content.call());
+        } else {
+            term.echo('cat: ' + args[0] + ': file format not supported.\n');
         }
     }
     
@@ -214,8 +229,8 @@ define(["jquery", "app/termSystem", "app/projects", "app/repeat"], function ($, 
             callback: help
         },
         ls: {
-            description: 'Lists files in the current directory.',
-            usage: 'ls',
+            description: 'Lists files in the specified directory.',
+            usage: 'ls [[[u;;]dir]]',
             args: 0,
             callback: ls
         },
