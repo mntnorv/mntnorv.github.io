@@ -1,11 +1,9 @@
 /*jslint browser: true*/
 
-define(["jquery", "app/system", "app/projects", "app/repeat"], function ($, system, projects, repeat) {
+define(["jquery", "app/termSystem", "app/projects", "app/repeat"], function ($, termSystem, projects, repeat) {
     "use strict";
     
-    var commands = [],
-        currentDir = '/',
-        currendDirObj = system.files;
+    var commands = [];
     
     /*
     | Terminal command functions
@@ -28,7 +26,35 @@ define(["jquery", "app/system", "app/projects", "app/repeat"], function ($, syst
     }
     
     function cd(args, term) {
-        term.echo(system.parseArgs('"belekas su tarpu    " belekas    su tarpu "belekas""su tarpu" \'kitokios " kabutės\' "viduj dar vienos\'"'));
+        var parsedPath,
+            fsObject,
+            newPath;
+        
+        if (args[0]) {
+            parsedPath = termSystem.parsePath(args[0]);
+        } else {
+            parsedPath = [];
+        }
+        
+        if (!parsedPath) {
+            term.echo('cd: ' + args[0] + ': no such file or directory.\n');
+            return;
+        }
+        
+        fsObject = termSystem.getFsObject(parsedPath);
+        if (!fsObject) {
+            term.echo('cd: ' + args[0] + ': no such file or directory.\n');
+            return;
+        }
+        
+        if (fsObject.type !== 'dir') {
+            term.echo('cd: ' + args[0] + ': not a directory.\n');
+            return;
+        }
+        
+        newPath = '/' + parsedPath.join('/');
+        term.echo(newPath + '\n');
+        termSystem.state.currentDir = newPath;
     }
     
     function pwd(args, term) {

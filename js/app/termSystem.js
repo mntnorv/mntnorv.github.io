@@ -1,7 +1,7 @@
 define(["app/files"], function (files) {
     "use strict";
     
-    var system = {};
+    var termSystem = {};
     
     function argStringToArray(argStr) {
         var args = [],
@@ -45,9 +45,18 @@ define(["app/files"], function (files) {
             doesNotExist = false,
             i;
         
+        // Exit early if path === '/'
+        if (path === '/') {
+            return [];
+        }
+        
         // Get starting path
         if (path.charAt(0) !== '/') {
-            resultPathArray = system.state.currentDir.substring(1).split('/');
+            if (termSystem.state.currentDir !== '/') {
+                resultPathArray = termSystem.state.currentDir.substring(1).split('/');
+            } else {
+                resultPathArray = [];
+            }
         } else {
             resultPathArray = [];
             path = path.substring(1);
@@ -80,20 +89,28 @@ define(["app/files"], function (files) {
     }
     
     function getFsObject(path) {
-        var parsedPath = parsePath(path),
+        var parsedPath,
             currentObject,
             lastPathElement,
             i;
+        
+        if (typeof path === 'string') {
+            parsedPath = parsePath(path);
+        } else if (Array.isArray(path)) {
+            parsedPath = path;
+        }
         
         // Exit early on some conditions
         if (parsedPath === undefined) {
             return undefined;
         } else if (parsedPath.length === 0) {
-            return system.filesystem;
+            currentObject = termSystem.filesystem;
+            currentObject.type = 'dir';
+            return currentObject;
         }
         
         // Try to find the filesystem object
-        currentObject = system.filesystem;
+        currentObject = termSystem.filesystem;
         for (i = 0; i < parsedPath.length - 1; i += 1) {
             currentObject = currentObject.dirs[parsedPath[i]];
             if (!currentObject) {
@@ -130,7 +147,7 @@ define(["app/files"], function (files) {
         
     }
     
-    system = {
+    termSystem = {
         filesystem: files,
         state: {
             currentDir: '/projects'
@@ -143,5 +160,5 @@ define(["app/files"], function (files) {
         parsePath: parsePath
     };
     
-    return system;
+    return termSystem;
 });
