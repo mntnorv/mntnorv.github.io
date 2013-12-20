@@ -42,6 +42,8 @@ define(["jquery", "app/commands", "jquery.mousewheel", "jquery.terminal"], funct
         width: '800px',
         height: '100%',
         prompt: '> ',
-        greetings: greetingMsg
+        greetings: greetingMsg,
+        exit: false,
+        clear: false
     });
 });
