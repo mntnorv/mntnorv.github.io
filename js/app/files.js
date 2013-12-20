@@ -26,11 +26,24 @@ define(["app/projects", "app/repeat"], function (projects, repeat) {
         return content;
     }
     
-    var files = {
-        'projects': {
-            content: projectsContent
+    var filesystem = {
+        dirs: {
+            'projects': {
+                dirs: {
+                },
+                files: {
+                    test: {
+                        content: 'test file'
+                    }
+                }
+            }
+        },
+        files: {
+            'projects.txt': {
+                content: projectsContent
+            }
         }
     };
     
-    return files;
+    return filesystem;
 });

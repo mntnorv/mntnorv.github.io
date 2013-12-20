@@ -3,7 +3,9 @@
 define(["jquery", "app/projects", "app/files", "app/repeat"], function ($, projects, files, repeat) {
     "use strict";
     
-    var commands = [];
+    var commands = [],
+        currentDir = '/',
+        currendDirObj = files;
     
     /*
     | Terminal command functions
@@ -23,6 +25,12 @@ define(["jquery", "app/projects", "app/files", "app/repeat"], function ($, proje
         } else {
             term.echo('cat: ' + args[0] + ': no such file.\n');
         }
+    }
+    
+    function cd(args, term) {
+    }
+    
+    function pwd(args, term) {
     }
     
     function help(args, term) {
@@ -121,9 +129,15 @@ define(["jquery", "app/projects", "app/files", "app/repeat"], function ($, proje
     commands = {
         cat: {
             description: 'Prints file contents.',
-            usage: 'cat [file]',
+            usage: 'cat [[u;;]file]',
             args: 1,
             callback: cat
+        },
+        cd: {
+            description: 'Changed the current directory.',
+            usage: 'cd [[[u;;]path]]',
+            args: 0,
+            callback: cd
         },
         help: {
             description: 'Prints available commands.',
@@ -139,15 +153,21 @@ define(["jquery", "app/projects", "app/files", "app/repeat"], function ($, proje
         },
         man: {
             description: 'Prints a short description and usage information about a command.',
-            usage: 'man [command]',
+            usage: 'man [[u;;]command]',
             args: 1,
             callback: man
         },
         open: {
             description: 'Opens the project\'s GitHub repository in a new tab.',
-            usage: 'open [project]',
+            usage: 'open [[u;;]project]',
             args: 1,
             callback: open
+        },
+        pwd: {
+            description: 'Prints current directory.',
+            usage: 'pwd',
+            args: 0,
+            callback: pwd
         }
     };
     
