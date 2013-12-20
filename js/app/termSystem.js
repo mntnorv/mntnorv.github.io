@@ -139,14 +139,6 @@ define(["app/files"], function (files) {
         }
     }
     
-    function getFile(path) {
-        
-    }
-    
-    function getDir(path) {
-        
-    }
-    
     termSystem = {
         filesystem: files,
         state: {
@@ -154,8 +146,6 @@ define(["app/files"], function (files) {
         },
         
         argStringToArray: argStringToArray,
-        getDir: getDir,
-        getFile: getFile,
         getFsObject: getFsObject,
         parsePath: parsePath
     };
