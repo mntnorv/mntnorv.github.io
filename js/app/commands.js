@@ -1,11 +1,11 @@
 /*jslint browser: true*/
 
-define(["jquery", "app/projects", "app/files", "app/repeat"], function ($, projects, files, repeat) {
+define(["jquery", "app/system", "app/projects", "app/repeat"], function ($, system, projects, repeat) {
     "use strict";
     
     var commands = [],
         currentDir = '/',
-        currendDirObj = files;
+        currendDirObj = system.files;
     
     /*
     | Terminal command functions
@@ -28,9 +28,11 @@ define(["jquery", "app/projects", "app/files", "app/repeat"], function ($, proje
     }
     
     function cd(args, term) {
+        term.echo(system.parseArgs('"belekas su tarpu    " belekas    su tarpu "belekas""su tarpu" \'kitokios " kabutės\' "viduj dar vienos\'"'));
     }
     
     function pwd(args, term) {
+        
     }
     
     function help(args, term) {

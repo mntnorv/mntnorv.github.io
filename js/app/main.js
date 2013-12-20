@@ -12,7 +12,6 @@ define(["jquery", "app/commands", "jquery.mousewheel", "jquery.terminal"], funct
     /*
     | Helper functions
     */
-    
     function printUsage(command, term) {
         term.echo('Usage: ' + command.usage + '\n' + command.description + '\n');
     }
