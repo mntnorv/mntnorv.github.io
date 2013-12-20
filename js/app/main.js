@@ -29,7 +29,7 @@ define(["jquery", "app/commands", "jquery.mousewheel", "jquery.terminal"], funct
             command = commands[split[0]];
             
             if (command) {
-                if (command.args === undefined || command.args === args.length) {
+                if (args.length >= command.args) {
                     command.callback(args, term);
                 } else {
                     printUsage(command, term);
