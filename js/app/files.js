@@ -27,9 +27,6 @@ define(["app/projects", "app/repeat"], function (projects, repeat) {
     }
     
     var files = {
-        'about': {
-            content: 'Empty!\n'
-        },
         'projects': {
             content: projectsContent
         }
