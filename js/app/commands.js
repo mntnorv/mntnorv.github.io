@@ -58,7 +58,7 @@ define(["jquery", "app/termSystem", "app/projects", "app/repeat"], function ($, 
     }
     
     function pwd(args, term) {
-        
+        term.echo(termSystem.state.currentDir + '\n');
     }
     
     function help(args, term) {

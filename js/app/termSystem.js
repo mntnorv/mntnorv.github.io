@@ -150,7 +150,7 @@ define(["app/files"], function (files) {
     termSystem = {
         filesystem: files,
         state: {
-            currentDir: '/projects'
+            currentDir: '/'
         },
         
         argStringToArray: argStringToArray,
