@@ -1,13 +1,13 @@
 /*jslint browser: true*/
 
-define(["jquery", "app/commands", "jquery.mousewheel", "jquery.terminal"], function ($, commands) {
+define([
+    "jquery",
+    "app/commands",
+    "text!partials/greeting.txt",
+    "jquery.mousewheel",
+    "jquery.terminal"
+], function ($, commands, greetingText) {
     "use strict";
-    
-    /*
-    | Constant variables
-    */
-    var greetingMsg = $('#greeting').html() +
-        "\nType 'help' to list available commands\n";
     
     /*
     | Helper functions
@@ -41,7 +41,7 @@ define(["jquery", "app/commands", "jquery.mousewheel", "jquery.terminal"], funct
         width: '800px',
         height: '100%',
         prompt: '> ',
-        greetings: greetingMsg,
+        greetings: greetingText,
         exit: false,
         clear: false
     });

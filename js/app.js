@@ -1,7 +1,8 @@
 requirejs.config({
-    baseUrl: 'js/lib',
+    baseUrl: "/js/lib",
     paths: {
-        app: "../app"
+        app: "/js/app",
+        partials: "/partials"
     },
     shim: {
         "jquery.terminal": ["jquery"]
