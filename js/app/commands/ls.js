@@ -1,20 +1,24 @@
 define(["app/termSystem", "app/repeat"], function (termSystem, repeat) {
     "use strict";
     
+    function filenameComparator(a, b) {
+        
+    }
+    
     function ls(args, term) {
         var fsObject,
-            terminalCols = term.cols(),
-            fileCount = 0,
-            colWidth = 0,
-            filesInRow,
-            filesInCol,
-            biggerCols,
             filenames = [],
-            output = [],
             name,
+            maxWidth = term.cols(),
+            maxCols,
+            cols,
+            lineWidth,
+            colWidths = [],
+            lines,
+            position,
             i,
             j,
-            currentFile;
+            output = [];
         
         // Get the FS object
         if (args[0]) {
@@ -36,52 +40,65 @@ define(["app/termSystem", "app/repeat"], function (termSystem, repeat) {
         }
         
         // Prepare the file list
-        // Get the max width and file count
         for (name in fsObject.files) {
             if (fsObject.files.hasOwnProperty(name)) {
                 filenames.push(name);
-                
-                fileCount += 1;
-                if (name.length > colWidth) {
-                    colWidth = name.length;
-                }
             }
         }
         
         for (name in fsObject.dirs) {
             if (fsObject.dirs.hasOwnProperty(name)) {
                 filenames.push(name + '/');
-                
-                fileCount += 1;
-                if (name.length > colWidth) {
-                    colWidth = name.length;
-                }
             }
         }
-        
+
         // Sort the filename array
         filenames.sort();
         
-        // Calculate the files in row and column
-        filesInRow = Math.floor(terminalCols / (colWidth + 2));
-        filesInCol = Math.floor(fileCount / filesInRow);
-        biggerCols = fileCount - (filesInRow * filesInCol);
-        
-        // Prepare the output array
-        for (i = 0; i < filesInCol + 1; i += 1) {
-            output[i] = "";
-        }
-        
-        // Add filenames to the output array
-        currentFile = 0;
-        for (i = 0; i < filesInRow && currentFile < fileCount; i += 1) {
-            for (j = 0; j < (filesInCol + 1) && currentFile < fileCount; j += 1) {
-                if ((j < filesInCol) || (j === filesInCol && i < biggerCols)) {
-                    output[j] += filenames[currentFile] +
-                        repeat(' ', colWidth - filenames[currentFile].length + 2);
-                    currentFile += 1;
+        // Calculate the maximum number of columns that can be printed
+        maxCols = Math.floor(maxWidth / 3);
+        for (i = maxCols; i > 1; i -= 1) {
+            lines = Math.ceil(filenames.length / i);
+            
+            // Prepare the column widths array
+            for (j = 0; j < i; j += 1) {
+                colWidths[j] = 0;
+            }
+            
+            // Calculate the resulting column widths
+            for (j = 0; j < filenames.length; j += 1) {
+                position = Math.floor(j / lines);
+                
+                if (colWidths[position] < (filenames[j].length + 2)) {
+                    colWidths[position] = (filenames[j].length + 2);
                 }
             }
+            
+            // Calculate line width
+            lineWidth = 0;
+            for (j = 0; j < i; j += 1) {
+                lineWidth += colWidths[j];
+            }
+            
+            if (lineWidth <= maxWidth) {
+                break;
+            }
+        }
+        
+        cols = i;
+        
+        // Prepare the output array
+        for (i = 0; i < lines; i += 1) {
+            output[i] = '';
+        }
+        
+        // Generate the output
+        for (i = 0; i < filenames.length; i += 1) {
+            position = Math.floor(i / lines);
+            output[i % lines] += filenames[i] + repeat(
+                ' ',
+                colWidths[position] - filenames[i].length
+            );
         }
         
         // Output the listing

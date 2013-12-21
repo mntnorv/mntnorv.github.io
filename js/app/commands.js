@@ -26,7 +26,7 @@ define([
     pwdCommand
 ) {
     "use strict";
-    
+        
     /*
     | Command definitions
     */
