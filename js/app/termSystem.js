@@ -135,7 +135,10 @@ define(["app/files"], function (files) {
         }
             
         // It can be a directory or a file
-        if (currentObject.dirs[lastPathElement]) {
+        if (lastPathElement === '') {
+            currentObject.type = 'dir';
+            return currentObject;
+        } else if (currentObject.dirs[lastPathElement]) {
             currentObject = currentObject.dirs[lastPathElement];
             currentObject.type = 'dir';
             return currentObject;

@@ -29,6 +29,14 @@ define(["app/termSystem"], function (termSystem) {
         }
         
         newPath = '/' + parsedPath.join('/');
+        
+        if (newPath !== '/' && newPath.charAt(newPath.length - 1) === '/') {
+            newPath = newPath.substring(
+                0,
+                newPath.length - 1
+            );
+        }
+        
         term.echo(newPath + '\n');
         termSystem.state.currentDir = newPath;
     }
