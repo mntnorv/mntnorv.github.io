@@ -30,14 +30,6 @@ define(["app/projects", "app/repeat"], function (projects, repeat) {
         dirs: {
             'projects': {
                 dirs: {},
-                files: {
-                    test: {
-                        content: 'test file'
-                    }
-                }
-            },
-            't e s t': {
-                dirs: {},
                 files: {}
             }
         },

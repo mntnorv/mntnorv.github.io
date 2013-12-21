@@ -10,3 +10,4 @@
 Mantas Norvaiša, 2013
 
 Type 'help' to list available commands
+Type 'man [[u;;]command]' to print a short description of a command

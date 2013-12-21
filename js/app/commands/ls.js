@@ -28,10 +28,10 @@ define(["app/termSystem", "app/repeat"], function (termSystem, repeat) {
         }
         
         if (!fsObject) {
-            term.echo('ls: ' + args[0] + ': no such file or directory.\n');
+            term.echo('ls: ' + args[0] + ': no such file or directory.');
             return;
         } else if (fsObject.type !== 'dir') {
-            term.echo('ls: ' + args[0] + ': not a directory. \n');
+            term.echo('ls: ' + args[0] + ': not a directory.');
             return;
         }
         
