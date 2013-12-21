@@ -3,7 +3,7 @@ define(["app/files"], function (files) {
     
     var termSystem = {};
     
-    function argStringToArray(argStr) {
+    function parseArgs(argStr) {
         var args = [],
             currentSymbol,
             currentArg,
@@ -157,8 +157,8 @@ define(["app/files"], function (files) {
             currentDir: '/'
         },
         
-        argStringToArray: argStringToArray,
         getFsObject: getFsObject,
+        parseArgs: parseArgs,
         parsePath: parsePath
     };
     

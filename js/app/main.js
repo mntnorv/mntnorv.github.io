@@ -2,11 +2,12 @@
 
 define([
     "jquery",
+    "app/termSystem",
     "app/commands",
     "text!partials/greeting.txt",
     "jquery.mousewheel",
     "jquery.terminal"
-], function ($, commands, greetingText) {
+], function ($, termSystem, commands, greetingText) {
     "use strict";
     
     /*
@@ -20,12 +21,12 @@ define([
     | Initialize the terminal
     */
     $('#terminal').terminal(function (input, term) {
-        var split   = input.split(" "),
-            args    = split.slice(1),
+        var parsed = termSystem.parseArgs(input),
+            args = parsed.slice(1),
             command;
         
         if (input !== '') {
-            command = commands[split[0]];
+            command = commands[parsed[0]];
             
             if (command) {
                 if (args.length >= command.args) {
@@ -34,7 +35,7 @@ define([
                     printUsage(command, term);
                 }
             } else {
-                term.echo(split[0] + ': command not found\n');
+                term.echo(parsed[0] + ': command not found\n');
             }
         }
     }, {
