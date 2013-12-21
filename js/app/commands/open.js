@@ -6,10 +6,10 @@ define(["app/projects"], function (projects) {
             project = projects[args[0]];
         
         if (project) {
-            term.echo('Opening ' + lowercaseName + '...\n(' + project.url + ')\n');
+            term.echo('Opening ' + lowercaseName + '...\n(' + project.url + ')');
             window.open(project.url, '_blank');
         } else {
-            term.echo('open: project \'' + lowercaseName + '\' not found.\n');
+            term.echo('open: project \'' + lowercaseName + '\' not found.');
             return;
         }
     }

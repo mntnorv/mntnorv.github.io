@@ -16,6 +16,10 @@ define([
     function printUsage(command, term) {
         term.echo('Usage: ' + command.usage + '\n' + command.description + '\n');
     }
+    
+    function prompt(setPrompt) {
+        setPrompt(termSystem.state.currentDir + ' > ');
+    }
 
     /*
     | Initialize the terminal
@@ -35,13 +39,15 @@ define([
                     printUsage(command, term);
                 }
             } else {
-                term.echo(parsed[0] + ': command not found\n');
+                term.echo(parsed[0] + ': command not found');
             }
+            
+            term.echo(' ');
         }
     }, {
         width: '800px',
         height: '100%',
-        prompt: '> ',
+        prompt: prompt,
         greetings: greetingText,
         exit: false,
         clear: false

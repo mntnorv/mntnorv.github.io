@@ -10,9 +10,9 @@ define([], function () {
         var command = commands[args[0]];
         
         if (command) {
-            term.echo('Usage: ' + command.usage + '\n' + command.description + '\n');
+            term.echo('Usage: ' + command.usage + '\n' + command.description);
         } else {
-            term.echo('man: no manual entry for ' + args[0] + '.\n');
+            term.echo('man: no manual entry for ' + args[0] + '.');
         }
     }
     

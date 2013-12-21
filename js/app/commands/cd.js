@@ -13,18 +13,18 @@ define(["app/termSystem"], function (termSystem) {
         }
         
         if (!parsedPath) {
-            term.echo('cd: ' + args[0] + ': no such file or directory.\n');
+            term.echo('cd: ' + args[0] + ': no such file or directory.');
             return;
         }
         
         fsObject = termSystem.getFsObject(parsedPath);
         if (!fsObject) {
-            term.echo('cd: ' + args[0] + ': no such file or directory.\n');
+            term.echo('cd: ' + args[0] + ': no such file or directory.');
             return;
         }
         
         if (fsObject.type !== 'dir') {
-            term.echo('cd: ' + args[0] + ': not a directory.\n');
+            term.echo('cd: ' + args[0] + ': not a directory.');
             return;
         }
         
@@ -36,8 +36,6 @@ define(["app/termSystem"], function (termSystem) {
                 newPath.length - 1
             );
         }
-        
-        term.echo(newPath + '\n');
         termSystem.state.currentDir = newPath;
     }
     

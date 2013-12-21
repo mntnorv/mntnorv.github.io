@@ -71,7 +71,6 @@ define(["app/termSystem", "app/repeat"], function (termSystem, repeat) {
         for (i = 0; i < filesInCol + 1; i += 1) {
             output[i] = "";
         }
-        output[filesInCol + 1] = '';
         
         // Add filenames to the output array
         currentFile = 0;

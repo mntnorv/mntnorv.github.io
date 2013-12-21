@@ -16,10 +16,10 @@ define(["app/termSystem"], function (termSystem) {
         }
         
         if (!fsObject) {
-            term.echo('cat: ' + args[0] + ': no such file or directory.\n');
+            term.echo('cat: ' + args[0] + ': no such file or directory.');
             return;
         } else if (fsObject.type !== 'file') {
-            term.echo('cat: ' + args[0] + ': not a file. \n');
+            term.echo('cat: ' + args[0] + ': not a file.');
             return;
         }
         
@@ -28,7 +28,7 @@ define(["app/termSystem"], function (termSystem) {
         } else if (typeof fsObject.content === 'function') {
             term.echo(fsObject.content.call());
         } else {
-            term.echo('cat: ' + args[0] + ': file format not supported.\n');
+            term.echo('cat: ' + args[0] + ': file format not supported.');
         }
     }
     

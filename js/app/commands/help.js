@@ -22,7 +22,7 @@ define([], function () {
             }
         }
         
-        term.echo('Available commands:\n' + message + '\n');
+        term.echo('Available commands:\n' + message);
     }
     
     return help;
