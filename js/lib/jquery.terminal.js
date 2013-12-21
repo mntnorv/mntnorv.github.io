@@ -2111,7 +2111,7 @@
         temp.remove();
         var result = Math.floor(terminal.width() / width);
         if (have_scrollbars(terminal)) {
-            var SCROLLBAR_WIDTH = 20;
+            var SCROLLBAR_WIDTH = 0;
             // assume that scrollbars are 20px - in my Laptop with
             // Linux/Chrome they are 16px
             var margins = terminal.innerWidth() - terminal.width();
