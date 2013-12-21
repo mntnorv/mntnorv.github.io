@@ -10,7 +10,7 @@ define([], function () {
             description: 'A Boggle-like Android game in Holo',
             url: 'https://github.com/mntnorv/wrdl-holo'
         },
-        'mntnorv.github.com': {
+        'mntnorv.github.io': {
             description: 'My GitHub page (this one)',
             url: 'https://github.com/mntnorv/mntnorv.github.io'
         }

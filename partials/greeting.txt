@@ -7,7 +7,7 @@
 88      88      88 88       88  88,   88       88 "8a,   ,a8" 88           `8b,d8'
 88      88      88 88       88  "Y888 88       88  `"YbbdP"'  88             "8"
 
-Mantas Norvaiša, 2013
+mntnorv.github.io v0.2                                         Mantas Norvaiša, 2013
 
 Type 'help' to list available commands
 Type 'man [[u;;]command]' to print a short description of a command

@@ -1,4 +1,16 @@
-define(["app/projects", "app/repeat"], function (projects, repeat) {
+define([
+    "app/projects",
+    "app/repeat",
+    "text!partials/wb.txt",
+    "text!partials/wrdl-holo.txt",
+    "text!partials/mntnorv.github.io.txt"
+], function (
+    projects,
+    repeat,
+    wbContent,
+    wrdlHoloContent,
+    mntnorvContent
+) {
     "use strict";
     
     function projectsContent() {
@@ -30,7 +42,17 @@ define(["app/projects", "app/repeat"], function (projects, repeat) {
         dirs: {
             'projects': {
                 dirs: {},
-                files: {}
+                files: {
+                    'wb.txt': {
+                        content: wbContent
+                    },
+                    'wrdl-holo.txt': {
+                        content: wrdlHoloContent
+                    },
+                    'mntnorv.github.io.txt': {
+                        content: mntnorvContent
+                    }
+                }
             }
         },
         files: {

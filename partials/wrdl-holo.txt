@@ -1,0 +1,17 @@
+[[bu;;]wrdl-holo] (https://github.com/mntnorv/wrdl-holo)
+
+A Boggle-like Android game in Holo
+
+[[u;;]Features:]
+
+ - Holo-style interface
+ - Grids of multiple sizes (4x4, 5x5, ...)
+ - Multiple infinite games (no need to end one to start another)
+
+[[u;;]Game modes:]
+
+ - Infinite (find as many words as you can)
+ - Timed (score as many points as you can in a fixed time period):
+   - 1 minute
+   - 3 minutes
+   - 5 minutes
