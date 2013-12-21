@@ -1,5 +1,6 @@
-requirejs.config({
-    baseUrl: "js",
+({
+    name: "app",
+    baseUrl: ".",
     paths: {
         partials: "../partials",
         jquery: "lib/jquery",
@@ -8,7 +9,6 @@ requirejs.config({
     },
     shim: {
         "jquery.terminal": ["jquery"]
-    }
-});
-
-requirejs(["app/main"]);
+    },
+    out: "app-built.js"
+})
