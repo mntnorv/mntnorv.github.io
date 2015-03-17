@@ -4,17 +4,81 @@ html, body {
 
 body {
   perspective: 600px;
+  font-family: 'Roboto', sans-serif;
 }
 
-#text {
+img {
+  height: 50%;
+}
+
+#content {
   display: inline-block;
   
   position: relative;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotateX(45deg) rotateY(0);
-  
+  transform: translate(-50%, -50%) rotateX(0) rotateY(0);
+}
+
+.title {
   font-size: 100px;
-  line-height: 90px;
-  font-family: 'Roboto', sans-serif;
+  line-height: 95%;
+}
+
+.subtitle > * {
+  vertical-align: top;
+}
+
+.subtitle .text {
+  display: inline-block;
+  color: #999;
+
+  line-height: 20px;
+  padding-top: 8px;
+  font-size: 20px;
+}
+
+.icon {
+  display: inline-block;
+
+  width: 32px;
+  height: 32px;
+  background-size: 32px 32px;
+
+  padding-right: 10px;
+  background-repeat: no-repeat;
+}
+
+a.icon-link {
+  display: inline-block;
+  text-decoration: none;
+  color: transparent;
+  height: 32px;
+}
+
+.icon.linkedin {
+  background-image: url(../img/linkedin.png);
+}
+
+@media screen and (max-width: 410px) {
+  .title {
+    font-size: 50px;
+  }
+  
+  .subtitle .text {
+    line-height: 12px;
+    padding-top: 7px;
+    font-size: 12px;
+  }
+  
+  .icon {
+    width: 24px;
+    height: 24px;
+    background-size: 24px 24px;
+    padding-right: 5px;
+  }
+  
+  a.icon-link {
+    height: 24px;
+  }
 }
