@@ -1,14 +1,37 @@
-requirejs.config({
-    baseUrl: "js",
-    paths: {
-        partials: "../partials",
-        jquery: "lib/jquery",
-        "jquery.terminal": "lib/jquery.terminal",
-        "jquery.mousewheel": "lib/jquery.mousewheel"
-    },
-    shim: {
-        "jquery.terminal": ["jquery"]
-    }
-});
+(function () {
+  var textElem   = document.getElementById( 'content' ),
+      rotationX  = 0.0000001,
+      rotationY  = 0.0000001,
+      mouse      = { x: 0, y: 0, moved: false },
+      halfWidth, halfHeight, distance;
+  
+  function onDocumentMouseMove (e) {
+    mouse.x = e.pageX;
+    mouse.y = e.pageY;
+    mouse.moved = true;
+  };
+  
+  function onWindowResize () {
+    halfWidth  = window.innerWidth / 2;
+    halfHeight = window.innerHeight / 2;
+    distance   = Math.max( window.innerWidth, window.innerHeight ) * 2;
+  };
+  
+  document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+  window.addEventListener( 'resize', onWindowResize, false );
 
-requirejs(["app/main"]);
+  onWindowResize();
+
+  function update () {
+    if ( !mouse.moved ) { return; }
+    rotationX = Math.atan( ( halfHeight - mouse.y ) / distance);
+    rotationY = Math.atan( ( mouse.x - halfWidth )  / distance);
+  };
+  
+  function render() {
+    requestAnimationFrame( render );
+    update();
+    textElem.style.transform = 'translate(-50%, -50%) rotateX(' + rotationX + 'rad) rotateY(' + rotationY + 'rad)';
+  }
+  render();
+})();
