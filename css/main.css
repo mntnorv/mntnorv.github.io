@@ -4,19 +4,37 @@ html, body {
 
 body {
   font-family: 'Roboto', sans-serif;
+  
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+#background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+#content {
+  z-index: 1;
 }
 
 img {
   height: 50%;
-}
-
-#content {
-  display: inline-block;
-
-  position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotateX(0) rotateY(0);
 }
 
 .title {
