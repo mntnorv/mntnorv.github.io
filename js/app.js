@@ -9,15 +9,15 @@
     trackPieces = [],
     trackPieceL = 0.3,
     zOffset     = 0,
-    i, j, k;
+    yOffset, i, j, k;
 
   function generateTrackPiece(i) {
     var z1, z2, y1, y2;
 
     z1 = i * trackPieceL;
     z2 = (i + 1) * trackPieceL;
-    y1 = -2 + Math.pow((i + 1), -0.25);
-    y2 = -2 + Math.pow((i + 2), -0.25);
+    y1 = Math.pow(1.1, i) - 2;
+    y2 = Math.pow(1.1, i + 1) - 2;
 
     return [
       {
@@ -53,7 +53,7 @@
       zCoef = -1 / (vec3[2] - 1);
     }
 
-    if(vec3[0] === '-w') {
+    if (vec3[0] === '-w') {
       x = 0;
     } else if (vec3[0] === '+w') {
       x = canvas.width;
@@ -72,10 +72,24 @@
   }
 
   function render() {
+    var
+      bottomPiece, bottomPieceIdx,
+      piece, component, point;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    bottomPieceIdx = Math.floor(-zOffset / trackPieceL);
+    
+    if (bottomPieceIdx < trackPieces.length) {
+      bottomPiece = trackPieces[bottomPieceIdx];
+    } else {
+      bottomPiece = trackPieces[trackPieces.length - 1];
+    }
+    
+    yOffset = (bottomPiece[0].points[2][1] - bottomPiece[0].points[0][1]) * ((-zOffset % trackPieceL) / trackPieceL) + bottomPiece[0].points[0][1] + 1;
+    
     for (i = 0; i < trackPieces.length; i += 1) {
-      var
-        piece = trackPieces[i],
-        component, point;
+      piece = trackPieces[i];
 
       for (j = 0; j < piece.length; j += 1) {
         component = piece[j];
@@ -84,13 +98,9 @@
         ctx.beginPath();
 
         for (k = 0; k < component.points.length; k += 1) {
-          point = component.points[k];
+          point = component.points[k].slice(0);
+          point[1] -= yOffset;
           point[2] += zOffset;
-
-          if (point[2] < 1) {
-            point[2] = 1;
-          }
-
           point = projectVec3(point);
 
           if (k === 0) {
@@ -105,7 +115,7 @@
       }
     }
 
-    zOffset -= 0.0001;
+    zOffset -= 0.05;
     window.requestAnimationFrame(render);
   }
 
