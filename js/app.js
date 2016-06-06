@@ -2,13 +2,16 @@
   'use strict';
 
   var
-    canvas      = document.getElementById('background'),
-    ctx         = canvas.getContext("2d"),
-    trackColors = ['#333', '#444'],
-    grassColors = ['#007100', '#005900'],
-    track       = [],
-    trackPieceL = 0.3,
-    camera      = [0, 1, 0],
+    canvas           = document.getElementById('background'),
+    ctx              = canvas.getContext("2d"),
+    trackColors      = ['#333', '#444'],
+    grassColors      = ['#007100', '#005900'],
+    track            = [],
+    trackPieceL      = 0.3,
+    maxPiecesVisible = 45,
+    camera           = [0, 0, 0],
+    stepsMoved       = 0,
+    speed            = 0.05,
     i;
 
   function generateTrackPiece(even) {
@@ -33,7 +36,8 @@
           width: 1,
           color: trackColors[colorIdx]
         }
-      ]
+      ],
+      even: even
     };
   }
 
@@ -76,16 +80,13 @@
     return newPoint;
   }
   
-  function advanceCamera(camera) {
+  function interpolateCameraY(cameraZ) {
     var
-      newCamera = camera.slice(0),
       interpolationCoef, bottomPieceIdx, bottomPiece, bottomPieceY,
-      i;
+      i, cameraY;
     
-    newCamera[2] += 0.05;
-    
-    interpolationCoef = (newCamera[2] % trackPieceL) / trackPieceL;
-    bottomPieceIdx = Math.floor(newCamera[2] / trackPieceL);
+    interpolationCoef = (cameraZ % trackPieceL) / trackPieceL;
+    bottomPieceIdx = Math.floor(cameraZ / trackPieceL);
     bottomPiece = track[bottomPieceIdx];
     
     bottomPieceY = 0;
@@ -93,9 +94,9 @@
       bottomPieceY += track[i].elevationDiff;
     }
     
-    newCamera[1] = bottomPiece.elevationDiff * interpolationCoef + bottomPieceY + 1;
+    cameraY = bottomPiece.elevationDiff * interpolationCoef + bottomPieceY + 1;
     
-    return newCamera;
+    return cameraY;
   }
   
   function build3DTrack(track) {
@@ -153,17 +154,40 @@
     
     return threeDTrack;
   }
-
-  for (i = 0; i < 10; i += 1) {
-    track.push(generateTrackPiece(i % 2));
+  
+  function update() {
+    var invisiblePieces, i, lastPieceEven;
+    
+    // Advance position
+    stepsMoved += 1;
+    camera[2] = stepsMoved * speed;
+    
+    // Remove old track pieces, add new ones
+    invisiblePieces = Math.floor(camera[2] / trackPieceL);
+    lastPieceEven = track[track.length - 1].even;
+    
+    if (invisiblePieces > 0) {
+      track.splice(0, invisiblePieces);
+    
+      for (i = 0; i < invisiblePieces; i += 1) {
+        lastPieceEven = !lastPieceEven;
+        track.push(generateTrackPiece(lastPieceEven));
+      }
+      
+      stepsMoved -= invisiblePieces * Math.round(trackPieceL / speed);
+      camera[2] = stepsMoved * speed;
+    }
+    
+    // Interpolate camera Y
+    camera[1] = interpolateCameraY(camera[2]);
   }
 
   function render() {
     var
       polygon, point, threeDTrack,
       i, j;
-    
-    // camera = advanceCamera(camera);
+
+    update();
     threeDTrack = build3DTrack(track);
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -191,6 +215,12 @@
 
     window.requestAnimationFrame(render);
   }
+  
+  // Initial track
+  for (i = 0; i < maxPiecesVisible; i += 1) {
+    track.push(generateTrackPiece(i % 2 === 0));
+  }
 
+  // Start
   render();
 }());
