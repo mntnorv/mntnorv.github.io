@@ -8,8 +8,8 @@
     grassColors = ['#007100', '#005900'],
     trackPieces = [],
     trackPieceL = 0.3,
-    zOffset     = 0,
-    yOffset, i, j, k;
+    camera      = [0, 0, 0],
+    i, j, k;
 
   function generateTrackPiece(i) {
     var z1, z2, y1, y2;
@@ -66,19 +66,29 @@
       Math.round(canvas.height - (((vec3[1] / zCoef) + 1) * halfH))
     ];
   }
-
-  for (i = 0; i < 10; i += 1) {
-    trackPieces.push(generateTrackPiece(i));
+  
+  function transformToCamera(point) {
+    var newPoint = point.slice(0);
+          
+    if (!isNaN(point[0])) {
+      newPoint[0] -= camera[0];
+    }
+    
+    newPoint[1] -= camera[1];
+    newPoint[2] -= camera[2];
+    
+    return newPoint;
   }
-
-  function render() {
+  
+  function advanceCamera(camera) {
     var
-      bottomPiece, bottomPieceIdx,
-      piece, component, point;
+      newCamera = camera.slice(0),
+      interpolationCoef, bottomPieceIdx, bottomPiece;
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    newCamera[2] += 0.05;
     
-    bottomPieceIdx = Math.floor(-zOffset / trackPieceL);
+    interpolationCoef = (newCamera[2] % trackPieceL) / trackPieceL;
+    bottomPieceIdx = Math.floor(newCamera[2] / trackPieceL);
     
     if (bottomPieceIdx < trackPieces.length) {
       bottomPiece = trackPieces[bottomPieceIdx];
@@ -86,7 +96,23 @@
       bottomPiece = trackPieces[trackPieces.length - 1];
     }
     
-    yOffset = (bottomPiece[0].points[2][1] - bottomPiece[0].points[0][1]) * ((-zOffset % trackPieceL) / trackPieceL) + bottomPiece[0].points[0][1] + 1;
+    newCamera[1] =
+      (bottomPiece[0].points[2][1] - bottomPiece[0].points[0][1]) *
+      interpolationCoef +
+      bottomPiece[0].points[0][1] + 1;
+    
+    return newCamera;
+  }
+
+  for (i = 0; i < 10; i += 1) {
+    trackPieces.push(generateTrackPiece(i));
+  }
+
+  function render() {
+    var piece, component, point;
+    camera = advanceCamera(camera);
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     for (i = 0; i < trackPieces.length; i += 1) {
       piece = trackPieces[i];
@@ -98,9 +124,7 @@
         ctx.beginPath();
 
         for (k = 0; k < component.points.length; k += 1) {
-          point = component.points[k].slice(0);
-          point[1] -= yOffset;
-          point[2] += zOffset;
+          point = transformToCamera(component.points[k].slice(0));
           point = projectVec3(point);
 
           if (k === 0) {
@@ -115,7 +139,6 @@
       }
     }
 
-    zOffset -= 0.05;
     window.requestAnimationFrame(render);
   }
 
