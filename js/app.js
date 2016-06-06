@@ -11,11 +11,42 @@
     maxPiecesVisible = 45,
     camera           = [0, 0, 0],
     stepsMoved       = 0,
-    speed            = 0.05,
+    speed            = 0.1,
+    trackFeature     = { steps: 0, stepsDone: 0 },
     i;
+  
+  function generateTrackFeature() {
+    var sign;
+    
+    if (Math.random < 0.5) {
+      sign = 1;
+    } else {
+      sign = -1;
+    }
+    
+    switch (Math.floor(Math.random() * 2)) {
+    case 0:
+      return {
+        type: 'straight',
+        steps: Math.floor(Math.random() * 30) + 10,
+        stepsDone: 0
+      };
+    case 1:
+      return {
+        type: 'hill',
+        steps: Math.floor(Math.random() * 10) + 10,
+        stepsDone: 0,
+        elevation: (Math.random() + 0.5) * sign
+      };
+    }
+  }
 
   function generateTrackPiece(even) {
-    var z1, z2, y1, y2, colorIdx;
+    var colorIdx, elevation;
+    
+    if (trackFeature.steps === trackFeature.stepsDone) {
+      trackFeature = generateTrackFeature();
+    }
 
     if (even) {
       colorIdx = 0;
@@ -23,13 +54,19 @@
       colorIdx = 1;
     }
     
-    z1 = i * trackPieceL;
-    z2 = (i + 1) * trackPieceL;
-    y1 = Math.pow(1.1, i) - 2;
-    y2 = Math.pow(1.1, i + 1) - 2;
+    switch (trackFeature.type) {
+    case 'straight':
+      elevation = 0;
+      break;
+    case 'hill':
+      elevation = (Math.sin((Math.PI * ((trackFeature.stepsDone + 1) / trackFeature.steps)) - (Math.PI / 2)) * trackFeature.elevation) - (Math.sin((Math.PI * (trackFeature.stepsDone / trackFeature.steps)) - (Math.PI / 2)) * trackFeature.elevation);
+      break;
+    }
+    
+    trackFeature.stepsDone += 1;
 
     return {
-      elevationDiff: 0,
+      elevationDiff: elevation,
       background: grassColors[colorIdx],
       features: [
         {
