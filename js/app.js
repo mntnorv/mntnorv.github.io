@@ -6,39 +6,35 @@
     ctx         = canvas.getContext("2d"),
     trackColors = ['#333', '#444'],
     grassColors = ['#007100', '#005900'],
-    trackPieces = [],
+    track       = [],
     trackPieceL = 0.3,
-    camera      = [0, 0, 0],
-    i, j, k;
+    camera      = [0, 1, 0],
+    i;
 
-  function generateTrackPiece(i) {
-    var z1, z2, y1, y2;
+  function generateTrackPiece(even) {
+    var z1, z2, y1, y2, colorIdx;
 
+    if (even) {
+      colorIdx = 0;
+    } else {
+      colorIdx = 1;
+    }
+    
     z1 = i * trackPieceL;
     z2 = (i + 1) * trackPieceL;
     y1 = Math.pow(1.1, i) - 2;
     y2 = Math.pow(1.1, i + 1) - 2;
 
-    return [
-      {
-        points: [
-          ['-w', y1, z1],
-          ['+w', y1, z1],
-          ['+w', y2, z2],
-          ['-w', y2, z2]
-        ],
-        color: grassColors[i % 2]
-      },
-      {
-        points: [
-          [-1, y1, z1],
-          [ 1, y1, z1],
-          [ 1, y2, z2],
-          [-1, y2, z2]
-        ],
-        color: trackColors[i % 2]
-      }
-    ];
+    return {
+      elevationDiff: 0,
+      background: grassColors[colorIdx],
+      features: [
+        {
+          width: 1,
+          color: trackColors[colorIdx]
+        }
+      ]
+    };
   }
 
   function projectVec3(vec3) {
@@ -83,60 +79,114 @@
   function advanceCamera(camera) {
     var
       newCamera = camera.slice(0),
-      interpolationCoef, bottomPieceIdx, bottomPiece;
+      interpolationCoef, bottomPieceIdx, bottomPiece, bottomPieceY,
+      i;
     
     newCamera[2] += 0.05;
     
     interpolationCoef = (newCamera[2] % trackPieceL) / trackPieceL;
     bottomPieceIdx = Math.floor(newCamera[2] / trackPieceL);
+    bottomPiece = track[bottomPieceIdx];
     
-    if (bottomPieceIdx < trackPieces.length) {
-      bottomPiece = trackPieces[bottomPieceIdx];
-    } else {
-      bottomPiece = trackPieces[trackPieces.length - 1];
+    bottomPieceY = 0;
+    for (i = 0; i < bottomPieceIdx; i += 1) {
+      bottomPieceY += track[i].elevationDiff;
     }
     
-    newCamera[1] =
-      (bottomPiece[0].points[2][1] - bottomPiece[0].points[0][1]) *
-      interpolationCoef +
-      bottomPiece[0].points[0][1] + 1;
+    newCamera[1] = bottomPiece.elevationDiff * interpolationCoef + bottomPieceY + 1;
     
     return newCamera;
   }
+  
+  function build3DTrack(track) {
+    var
+      threeDTrack = [],
+      combinedElevation = 0,
+      piece, feature,
+      featureYOffset,
+      i, j, y1, y2, z1, z2;
+    
+    for (i = 0; i < track.length; i += 1) {
+      combinedElevation += track[i].elevationDiff;
+    }
+    
+    for (i = (track.length - 1); i >= 0; i -= 1) {
+      piece = track[i];
+      
+      y1 = combinedElevation - piece.elevationDiff;
+      y2 = combinedElevation;
+      z1 = i * trackPieceL;
+      z2 = (i + 1) * trackPieceL;
+      
+      // Background
+      threeDTrack.push({
+        points: [
+          ['-w', y1, z1],
+          ['+w', y1, z1],
+          ['+w', y2, z2],
+          ['-w', y2, z2]
+        ],
+        color: piece.background
+      });
+      
+      // Features
+      featureYOffset = 0;
+      
+      for (j = 0; j < piece.features.length; j += 1) {
+        feature = piece.features[j];
+        
+        threeDTrack.push({
+          points: [
+            [-1 + (featureYOffset * 2), y1, z1],
+            [-1 + ((featureYOffset + feature.width) * 2), y1, z1],
+            [-1 + ((featureYOffset + feature.width) * 2), y2, z2],
+            [-1 + (featureYOffset * 2), y2, z2]
+          ],
+          color: feature.color
+        });
+        
+        featureYOffset += feature.width * 2;
+      }
+      
+      combinedElevation -= piece.elevationDiff;
+    }
+    
+    return threeDTrack;
+  }
 
   for (i = 0; i < 10; i += 1) {
-    trackPieces.push(generateTrackPiece(i));
+    track.push(generateTrackPiece(i % 2));
   }
 
   function render() {
-    var piece, component, point;
-    camera = advanceCamera(camera);
+    var
+      polygon, point, threeDTrack,
+      i, j;
+    
+    // camera = advanceCamera(camera);
+    threeDTrack = build3DTrack(track);
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    for (i = 0; i < trackPieces.length; i += 1) {
-      piece = trackPieces[i];
+    for (i = 0; i < threeDTrack.length; i += 1) {
+      polygon = threeDTrack[i];
 
-      for (j = 0; j < piece.length; j += 1) {
-        component = piece[j];
+      ctx.fillStyle = polygon.color;
+      ctx.beginPath();
 
-        ctx.fillStyle = component.color;
-        ctx.beginPath();
+      for (j = 0; j < polygon.points.length; j += 1) {
+        point = transformToCamera(polygon.points[j].slice(0));
+        point = projectVec3(point);
 
-        for (k = 0; k < component.points.length; k += 1) {
-          point = transformToCamera(component.points[k].slice(0));
-          point = projectVec3(point);
-
-          if (k === 0) {
-            ctx.moveTo(point[0], point[1]);
-          } else {
-            ctx.lineTo(point[0], point[1]);
-          }
+        if (j === 0) {
+          ctx.moveTo(point[0], point[1]);
+        } else {
+          ctx.lineTo(point[0], point[1]);
         }
-
-        ctx.closePath();
-        ctx.fill();
       }
+
+      ctx.closePath();
+      ctx.fill();
     }
 
     window.requestAnimationFrame(render);
