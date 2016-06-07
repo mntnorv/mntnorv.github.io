@@ -6,6 +6,7 @@
     ctx              = canvas.getContext("2d"),
     trackColors      = ['#333', '#444'],
     grassColors      = ['#007100', '#005900'],
+    sideColors       = ['#c00', '#ddd'],
     track            = [],
     trackPieceL      = 0.3,
     maxPiecesVisible = 45,
@@ -48,7 +49,7 @@
   }
 
   function generateTrackPiece(even) {
-    var colorIdx, elevation;
+    var colorIdx, elevation, features;
     
     if (trackFeature.steps === trackFeature.stepsDone) {
       trackFeature = generateTrackFeature();
@@ -70,16 +71,51 @@
     }
     
     trackFeature.stepsDone += 1;
+    
+    if (even) {
+      features = [
+        {
+          width: 0.05,
+          color: sideColors[colorIdx]
+        },
+        {
+          width: 0.9,
+          color: trackColors[colorIdx]
+        },
+        {
+          width: 0.05,
+          color: sideColors[colorIdx]
+        }
+      ];
+    } else {
+      features = [
+        {
+          width: 0.05,
+          color: sideColors[colorIdx]
+        },
+        {
+          width: 0.425,
+          color: trackColors[colorIdx]
+        },
+        {
+          width: 0.05,
+          color: '#ddd'
+        },
+        {
+          width: 0.425,
+          color: trackColors[colorIdx]
+        },
+        {
+          width: 0.05,
+          color: sideColors[colorIdx]
+        }
+      ];
+    }
 
     return {
       elevationDiff: elevation,
       background: grassColors[colorIdx],
-      features: [
-        {
-          width: 1,
-          color: trackColors[colorIdx]
-        }
-      ],
+      features: features,
       even: even
     };
   }
@@ -194,7 +230,7 @@
           color: feature.color
         });
         
-        featureYOffset += feature.width * 2;
+        featureYOffset += feature.width;
       }
       
       combinedElevation -= (piece.elevationDiff - elevationOffset);
