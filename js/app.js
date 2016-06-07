@@ -13,7 +13,6 @@
     stepsMoved       = 0,
     speed            = 0.1,
     elevationOffset  = 0,
-    lastElevation    = 0,
     trackFeature     = { steps: 0, stepsDone: 0 },
     i;
   
@@ -216,7 +215,6 @@
     lastPieceEven = track[track.length - 1].even;
     
     if (invisiblePieces > 0) {
-      lastElevation = track[invisiblePieces - 1].elevationDiff;
       track.splice(0, invisiblePieces);
     
       for (i = 0; i < invisiblePieces; i += 1) {
@@ -230,8 +228,8 @@
     
     // Update elevation offset
     elevationOffset = interpolateElevationOffset(
-      lastElevation,
       track[0].elevationDiff,
+      track[1].elevationDiff,
       camera[2]
     );
     
