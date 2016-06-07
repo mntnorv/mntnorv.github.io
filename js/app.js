@@ -15,10 +15,15 @@
     trackFeature     = { steps: 0, stepsDone: 0 },
     i;
   
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  
   function generateTrackFeature() {
     var sign;
     
-    if (Math.random < 0.5) {
+    if (Math.random() < 0.5) {
       sign = 1;
     } else {
       sign = -1;
@@ -257,7 +262,11 @@
   for (i = 0; i < maxPiecesVisible; i += 1) {
     track.push(generateTrackPiece(i % 2 === 0));
   }
+  
+  // resize the canvas to fill browser window dynamically
+  window.addEventListener('resize', resizeCanvas, false);
 
   // Start
+  resizeCanvas();
   render();
 }());
