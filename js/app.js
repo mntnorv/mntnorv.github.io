@@ -41,9 +41,9 @@
     case 1:
       return {
         type: 'hill',
-        steps: Math.floor(Math.random() * 20) + 20,
+        steps: Math.floor(Math.random() * 15) + 15,
         stepsDone: 0,
-        elevation: (Math.random() + 0.5) * sign
+        elevation: (Math.random() + 1.5) * sign
       };
     }
   }
@@ -247,7 +247,7 @@
     camera[2] = stepsMoved * speed;
     
     // Remove old track pieces, add new ones
-    invisiblePieces = Math.floor(camera[2] / trackPieceL);
+    invisiblePieces = Math.floor(camera[2] / trackPieceL) - 3;
     lastPieceEven = track[track.length - 1].even;
     
     if (invisiblePieces > 0) {
