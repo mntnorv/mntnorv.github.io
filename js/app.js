@@ -12,6 +12,8 @@
     camera           = [0, 0, 0],
     stepsMoved       = 0,
     speed            = 0.1,
+    elevationOffset  = 0,
+    lastElevation    = 0,
     trackFeature     = { steps: 0, stepsDone: 0 },
     i;
   
@@ -39,7 +41,7 @@
     case 1:
       return {
         type: 'hill',
-        steps: Math.floor(Math.random() * 10) + 10,
+        steps: Math.floor(Math.random() * 20) + 20,
         stepsDone: 0,
         elevation: (Math.random() + 0.5) * sign
       };
@@ -133,12 +135,17 @@
     
     bottomPieceY = 0;
     for (i = 0; i < bottomPieceIdx; i += 1) {
-      bottomPieceY += track[i].elevationDiff;
+      bottomPieceY += track[i].elevationDiff - elevationOffset;
     }
     
-    cameraY = bottomPiece.elevationDiff * interpolationCoef + bottomPieceY + 1;
+    cameraY = (bottomPiece.elevationDiff - elevationOffset) * interpolationCoef + bottomPieceY + 1;
     
     return cameraY;
+  }
+  
+  function interpolateElevationOffset(last, now, cameraZ) {
+    var interpolationCoef = (cameraZ % trackPieceL) / trackPieceL;
+    return (now - last) * interpolationCoef + last;
   }
   
   function build3DTrack(track) {
@@ -150,13 +157,13 @@
       i, j, y1, y2, z1, z2;
     
     for (i = 0; i < track.length; i += 1) {
-      combinedElevation += track[i].elevationDiff;
+      combinedElevation += (track[i].elevationDiff - elevationOffset);
     }
     
     for (i = (track.length - 1); i >= 0; i -= 1) {
       piece = track[i];
       
-      y1 = combinedElevation - piece.elevationDiff;
+      y1 = combinedElevation - (piece.elevationDiff - elevationOffset);
       y2 = combinedElevation;
       z1 = i * trackPieceL;
       z2 = (i + 1) * trackPieceL;
@@ -191,7 +198,7 @@
         featureYOffset += feature.width * 2;
       }
       
-      combinedElevation -= piece.elevationDiff;
+      combinedElevation -= (piece.elevationDiff - elevationOffset);
     }
     
     return threeDTrack;
@@ -209,6 +216,7 @@
     lastPieceEven = track[track.length - 1].even;
     
     if (invisiblePieces > 0) {
+      lastElevation = track[invisiblePieces - 1].elevationDiff;
       track.splice(0, invisiblePieces);
     
       for (i = 0; i < invisiblePieces; i += 1) {
@@ -219,6 +227,13 @@
       stepsMoved -= invisiblePieces * Math.round(trackPieceL / speed);
       camera[2] = stepsMoved * speed;
     }
+    
+    // Update elevation offset
+    elevationOffset = interpolateElevationOffset(
+      lastElevation,
+      track[0].elevationDiff,
+      camera[2]
+    );
     
     // Interpolate camera Y
     camera[1] = interpolateCameraY(camera[2]);
