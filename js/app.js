@@ -9,10 +9,10 @@
     sideColors       = ['#c00', '#ddd'],
     track            = [],
     trackPieceL      = 0.3,
-    maxPiecesVisible = 45,
+    maxPiecesVisible = 50,
     camera           = [0, 0, 0],
     stepsMoved       = 0,
-    speed            = 0.06,
+    speed            = 0.1,
     elevationOffset  = 0,
     trackFeature     = { steps: 0, stepsDone: 0 },
     i;
@@ -35,7 +35,7 @@
     case 0:
       return {
         type: 'straight',
-        steps: Math.floor(Math.random() * 30) + 10,
+        steps: Math.floor(Math.random() * 10) + 10,
         stepsDone: 0
       };
     case 1:
@@ -122,8 +122,8 @@
 
   function projectVec3(vec3) {
     var
-      halfH = canvas.height / 2,
-      halfW = canvas.width  / 2,
+      halfH = canvas.width / 4,
+      halfW = canvas.width / 2,
       x, zCoef;
 
     if (vec3[2] > 0) {
@@ -247,7 +247,7 @@
     camera[2] = stepsMoved * speed;
 
     // Remove old track pieces, add new ones
-    invisiblePieces = Math.floor(stepsMoved / 5) - 2;
+    invisiblePieces = Math.floor(stepsMoved / 3) - 2;
     lastPieceEven = track[track.length - 1].even;
 
     if (invisiblePieces > 0) {
@@ -258,7 +258,7 @@
         track.push(generateTrackPiece(lastPieceEven));
       }
 
-      stepsMoved -= invisiblePieces * 5;
+      stepsMoved -= invisiblePieces * 3;
       camera[2] = stepsMoved * speed;
     }
 
