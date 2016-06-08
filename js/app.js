@@ -2,8 +2,8 @@
   'use strict';
 
   var
-    canvas           = document.getElementById('background'),
-    ctx              = canvas.getContext("2d"),
+    canvas           = document.getElementById('game'),
+    ctx              = canvas.getContext('2d'),
     trackColors      = ['#333', '#444'],
     grassColors      = ['#007100', '#005900'],
     sideColors       = ['#c00', '#ddd'],
