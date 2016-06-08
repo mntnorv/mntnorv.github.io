@@ -13,7 +13,9 @@
     camera           = [0, 0, 0],
     stepsMoved       = 0,
     speed            = 0.1,
+    stepsPerPiece    = Math.round(trackPieceL / speed),
     elevationOffset  = 0,
+    turnOffset       = 0,
     trackFeature     = { steps: 0, stepsDone: 0 },
     i;
 
@@ -114,6 +116,7 @@
 
     return {
       elevationDiff: elevation,
+      turn: 0.02,
       background: grassColors[colorIdx],
       features: features,
       even: even
@@ -123,7 +126,7 @@
   function projectVec3(vec3) {
     var
       halfH = canvas.width / 4,
-      halfW = canvas.width / 2,
+      halfW = canvas.width / 1.5,
       x, zCoef;
 
     if (vec3[2] > 0) {
@@ -137,7 +140,7 @@
     } else if (vec3[0] === '+w') {
       x = canvas.width;
     } else {
-      x = ((vec3[0] / zCoef) + 1) * halfW;
+      x = ((vec3[0] / zCoef) + 1) * halfW - (halfW - (canvas.width / 2));
     }
 
     return [
@@ -187,17 +190,22 @@
     var
       threeDTrack = [],
       combinedElevation = 0,
+      combinedTurn = 0,
       piece, feature,
-      featureYOffset,
-      i, j, y1, y2, z1, z2;
+      featureXOffset,
+      i, j, y1, y2, z1, z2,
+      x1Offset, x2Offset;
 
     for (i = 0; i < track.length; i += 1) {
-      combinedElevation += (track[i].elevationDiff - elevationOffset);
+      combinedElevation += track[i].elevationDiff - elevationOffset;
+      combinedTurn      += track[i].turn * Math.max(0, i - turnOffset);
     }
 
     for (i = (track.length - 1); i >= 0; i -= 1) {
       piece = track[i];
 
+      x1Offset = combinedTurn - (piece.turn * Math.max(0, i - turnOffset));
+      x2Offset = combinedTurn;
       y1 = combinedElevation - (piece.elevationDiff - elevationOffset);
       y2 = combinedElevation;
       z1 = i * trackPieceL;
@@ -215,50 +223,60 @@
       });
 
       // Features
-      featureYOffset = 0;
+      featureXOffset = 0;
 
       for (j = 0; j < piece.features.length; j += 1) {
         feature = piece.features[j];
 
         threeDTrack.push({
           points: [
-            [-1 + (featureYOffset * 2), y1, z1],
-            [-1 + ((featureYOffset + feature.width) * 2), y1, z1],
-            [-1 + ((featureYOffset + feature.width) * 2), y2, z2],
-            [-1 + (featureYOffset * 2), y2, z2]
+            [
+              -1 + (featureXOffset * 2) + x1Offset,
+              y1, z1
+            ], [
+              -1 + ((featureXOffset + feature.width) * 2) + x1Offset,
+              y1, z1
+            ], [
+              -1 + ((featureXOffset + feature.width) * 2) + x2Offset,
+              y2, z2
+            ], [
+              -1 + (featureXOffset * 2) + x2Offset,
+              y2, z2
+            ]
           ],
           color: feature.color
         });
 
-        featureYOffset += feature.width;
+        featureXOffset += feature.width;
       }
 
       combinedElevation -= (piece.elevationDiff - elevationOffset);
+      combinedTurn      -= piece.turn * Math.max(0, i - turnOffset);
     }
 
     return threeDTrack;
   }
 
   function update() {
-    var invisiblePieces, i, lastPieceEven;
+    var piecesToRemove, i, lastPieceEven;
 
     // Advance position
     stepsMoved += 1;
     camera[2] = stepsMoved * speed;
 
     // Remove old track pieces, add new ones
-    invisiblePieces = Math.floor(stepsMoved / 3) - 2;
+    piecesToRemove = Math.floor(stepsMoved / stepsPerPiece) - 2;
     lastPieceEven = track[track.length - 1].even;
 
-    if (invisiblePieces > 0) {
-      track.splice(0, invisiblePieces);
+    if (piecesToRemove > 0) {
+      track.splice(0, piecesToRemove);
 
-      for (i = 0; i < invisiblePieces; i += 1) {
+      for (i = 0; i < piecesToRemove; i += 1) {
         lastPieceEven = !lastPieceEven;
         track.push(generateTrackPiece(lastPieceEven));
       }
 
-      stepsMoved -= invisiblePieces * 3;
+      stepsMoved -= piecesToRemove * stepsPerPiece;
       camera[2] = stepsMoved * speed;
     }
 
@@ -268,6 +286,9 @@
       (track[1].elevationDiff + track[2].elevationDiff + track[3].elevationDiff + track[4].elevationDiff + track[5].elevationDiff) / 5,
       camera[2]
     );
+    
+    // Update turn offset
+    turnOffset = stepsMoved / stepsPerPiece;
 
     // Interpolate camera Y
     camera[1] = interpolateCameraY(camera[2]);
