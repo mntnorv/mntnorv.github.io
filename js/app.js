@@ -2,11 +2,11 @@
   'use strict';
 
   var
-    canvas           = document.getElementById('game'),
-    ctx              = canvas.getContext('2d'),
-    trackColors      = ['#333', '#444'],
-    grassColors      = ['#007100', '#005900'],
-    sideColors       = ['#c00', '#ddd'],
+    canvas = document.getElementById('game'),
+    gl, shaderProgram, positionLocation, colorLocation, buffer,
+    trackColors      = [[0.2, 0.2, 0.2], [0.267, 0.267, 0.267]],
+    grassColors      = [[0, 0.443, 0], [0, 0.349, 0]],
+    sideColors       = [[0.8, 0, 0], [0.867, 0.867, 0.867]],
     track            = [],
     trackPieceL      = 0.3,
     maxPiecesVisible = 50,
@@ -17,16 +17,18 @@
     elevationOffset  = 0,
     turnOffset       = 0,
     trackFeatures    = {},
+    pointsArray      = new Float32Array(8),
     i;
 
   function resizeCanvas() {
-    canvas.width = window.innerWidth;
+    canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
   }
 
   function generateHillFeature(current) {
     var sign;
-    
+
     if (current.steps > current.stepsDone) {
       return current;
     }
@@ -52,10 +54,10 @@
       };
     }
   }
-  
+
   function generateTurnFeature(current) {
     var sign;
-    
+
     if (current.steps > current.stepsDone) {
       return current;
     }
@@ -141,7 +143,7 @@
         },
         {
           width: 0.05,
-          color: '#ddd'
+          color: [0.867, 0.867, 0.867]
         },
         {
           width: 0.425,
@@ -165,8 +167,8 @@
 
   function projectVec3(vec3) {
     var
-      halfH = canvas.width / 4,
-      halfW = canvas.width / 1.5,
+      hCoef = (canvas.width / 3) / canvas.height,
+      wCoef = 1.5,
       x, zCoef;
 
     if (vec3[2] > 0) {
@@ -176,16 +178,16 @@
     }
 
     if (vec3[0] === '-w') {
-      x = 0;
+      x = -1;
     } else if (vec3[0] === '+w') {
-      x = canvas.width;
+      x = 1;
     } else {
-      x = ((vec3[0] / zCoef) + 1) * halfW - (halfW - (canvas.width / 2));
+      x = (vec3[0] * wCoef) / zCoef;
     }
 
     return [
-      Math.round(x),
-      Math.round(canvas.height - (((vec3[1] / zCoef) + 1) * halfH))
+      x,
+      (((vec3[1] / zCoef) + 1) * hCoef) - 1
     ];
   }
 
@@ -239,10 +241,10 @@
 
     combinedTurn    += turnOffset;
     combinedXOffset += turnOffset;
-    
+
     for (i = 0; i < track.length; i += 1) {
       combinedElevation += track[i].elevation - elevationOffset;
-      
+
       if (i > Math.floor(stepsMoved / stepsPerPiece)) {
         combinedTurn += track[i].turn;
         combinedXOffset += combinedTurn;
@@ -335,7 +337,7 @@
       (track[1].elevation + track[2].elevation + track[3].elevation + track[4].elevation + track[5].elevation) / 5,
       camera[2]
     );
-    
+
     // Update turn offset
     invisiblePieces = Math.floor(stepsMoved / stepsPerPiece);
     turnOffset = (1 - ((stepsMoved % stepsPerPiece) / stepsPerPiece)) * track[invisiblePieces].turn;
@@ -352,32 +354,41 @@
     update();
     threeDTrack = build3DTrack(track);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     for (i = 0; i < threeDTrack.length; i += 1) {
       polygon = threeDTrack[i];
-
-      ctx.fillStyle = polygon.color;
-      ctx.beginPath();
 
       for (j = 0; j < polygon.points.length; j += 1) {
         point = transformToCamera(polygon.points[j].slice(0));
         point = projectVec3(point);
 
-        if (j === 0) {
-          ctx.moveTo(point[0], point[1]);
-        } else {
-          ctx.lineTo(point[0], point[1]);
-        }
+        pointsArray[j * 2]     = point[0];
+        pointsArray[j * 2 + 1] = point[1];
       }
 
-      ctx.closePath();
-      ctx.fill();
+      gl.uniform4f(
+        colorLocation,
+        polygon.color[0], polygon.color[1], polygon.color[2], 1
+      );
+
+      gl.bufferData(gl.ARRAY_BUFFER, pointsArray, gl.STATIC_DRAW);
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
 
     window.requestAnimationFrame(render);
   }
-  
+
+  // Initialize stuff
+  gl               = GL.initWebGL(canvas);
+  shaderProgram    = GL.initShaders(gl);
+  positionLocation = gl.getAttribLocation(shaderProgram, 'a_position');
+  colorLocation    = gl.getUniformLocation(shaderProgram, 'u_color');
+
+  buffer = gl.createBuffer();
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.enableVertexAttribArray(positionLocation);
+  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
   // Initial track features
   trackFeatures = {
     hill: {
@@ -397,7 +408,7 @@
     track.push(generateTrackPiece(i % 2 === 0));
   }
 
-  // resize the canvas to fill browser window dynamically
+  // Resize the canvas to fill browser window dynamically
   window.addEventListener('resize', resizeCanvas, false);
 
   // Start
