@@ -1,0 +1,24 @@
+{
+  "name": "mntnorv.github.io",
+  "version": "1.0.0",
+  "description": "Personal website of Mantas Norvaiša",
+  "main": "src/app.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mntnorv/mntnorv.github.io.git"
+  },
+  "author": "Mantas Norvaiša",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mntnorv/mntnorv.github.io/issues"
+  },
+  "homepage": "https://github.com/mntnorv/mntnorv.github.io#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-typescript": "^2.13.6",
+    "typescript": "^1.8.10"
+  }
+}
