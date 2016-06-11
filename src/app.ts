@@ -1,26 +1,67 @@
 /// <reference path="gl.ts"/>
 
 namespace App {
-  interface TrackGenerationFeature {
-    steps: number,
-    stepsDone: number
-  }
+  const TRACK_PIECE_LENGTH = 0.3;
+  const SPEED = 0.1;
+  const MAX_PIECES_VISIBLE = 50;
+  const STEPS_PER_PIECE = TRACK_PIECE_LENGTH / SPEED;
 
-  class HillFeature {
+  const GRASS_COLORS = [
+    [0, 0.443, 0],
+    [0, 0.349, 0]
+  ];
+
+  const TRACK_COLORS = [
+    [0.2, 0.2, 0.2],
+    [0.267, 0.267, 0.267]
+  ];
+
+  const SIDE_COLORS = [
+    [0.8, 0, 0],
+    [0.867, 0.867, 0.867]
+  ];
+
+  const TRACK_PIECE_ODD_FEATURES = [
+    {
+      width: 0.05,
+      color: SIDE_COLORS[1]
+    }, {
+      width: 0.425,
+      color: TRACK_COLORS[1]
+    }, {
+      width: 0.05,
+      color: [0.867, 0.867, 0.867]
+    }, {
+      width: 0.425,
+      color: TRACK_COLORS[1]
+    }, {
+      width: 0.05,
+      color: SIDE_COLORS[1]
+    }
+  ];
+
+  const TRACK_PIECE_EVEN_FEATURES = [
+    {
+      width: 0.05,
+      color: SIDE_COLORS[0]
+    }, {
+      width: 0.9,
+      color: TRACK_COLORS[0]
+    }, {
+      width: 0.05,
+      color: SIDE_COLORS[0]
+    }
+  ];
+
+  class TrackGenerationFeature {
     steps: number;
     stepsDone: number;
-    elevation: number;
-  }
-
-  class TurnFeature {
-    steps: number;
-    stepsDone: number;
-    turn: number;
+    change: number;
   }
 
   class TrackGenerationFeatures {
-    hill: HillFeature;
-    turn: TurnFeature;
+    hill: TrackGenerationFeature;
+    turn: TrackGenerationFeature;
   }
 
   class TrackFeature {
@@ -41,6 +82,11 @@ namespace App {
     points: number[][];
   }
 
+  class TrackOffsets {
+    elevation: number;
+    turn: number;
+  }
+
   let
     canvas: HTMLCanvasElement,
     trackFeatures: TrackGenerationFeatures,
@@ -49,19 +95,10 @@ namespace App {
     positionLocation: number,
     colorLocation: WebGLUniformLocation,
     buffer: WebGLBuffer,
-    trackColors      = [[0.2, 0.2, 0.2], [0.267, 0.267, 0.267]],
-    grassColors      = [[0, 0.443, 0], [0, 0.349, 0]],
-    sideColors       = [[0.8, 0, 0], [0.867, 0.867, 0.867]],
-    track            = [] as TrackPiece[],
-    trackPieceL      = 0.3,
-    maxPiecesVisible = 50,
-    camera           = [0, 0, 0],
-    stepsMoved       = 0,
-    speed            = 0.1,
-    stepsPerPiece    = Math.round(trackPieceL / speed),
-    elevationOffset  = 0,
-    turnOffset       = 0,
-    pointsArray      = new Float32Array(8),
+    track           = [] as TrackPiece[],
+    camera          = [0, 0, 0],
+    stepsMoved      = 0,
+    pointsArray     = new Float32Array(8),
     i: number;
 
   function resizeCanvas() {
@@ -70,7 +107,7 @@ namespace App {
     gl.viewport(0, 0, canvas.width, canvas.height);
   }
 
-  function generateHillFeature(current: HillFeature) {
+  function generateTrackFeature(current: TrackGenerationFeature, max: number, min: number) {
     let sign: number;
 
     if (current.steps > current.stepsDone) {
@@ -84,126 +121,42 @@ namespace App {
     }
 
     switch (Math.floor(Math.random() * 2)) {
-    case 0:
-      return {
-        elevation: 0,
-        steps: Math.floor(Math.random() * 10) + 10,
-        stepsDone: 0
-      };
-    case 1:
-      return {
-        steps: Math.floor(Math.random() * 15) + 15,
-        stepsDone: 0,
-        elevation: (Math.random() + 1.5) * sign
-      };
+      case 0:
+        return {
+          change: 0,
+          steps: Math.floor(Math.random() * 10) + 10,
+          stepsDone: 0
+        };
+      case 1:
+        return {
+          steps: Math.floor(Math.random() * 15) + 15,
+          stepsDone: 0,
+          change: ((Math.random() * (max - min)) + min) * sign
+        };
     }
   }
 
-  function generateTurnFeature(current: TurnFeature) {
-    let sign: number;
+  function generateTrackPiece(even: boolean, trackFeatures: TrackGenerationFeatures): TrackPiece {
+    let elevation: number, features: TrackFeature[];
 
-    if (current.steps > current.stepsDone) {
-      return current;
-    }
+    trackFeatures.hill = generateTrackFeature(trackFeatures.hill, 1.5, 2.5);
+    trackFeatures.turn = generateTrackFeature(trackFeatures.turn, 0.01, 0.03);
 
-    if (Math.random() < 0.5) {
-      sign = 1;
-    } else {
-      sign = -1;
-    }
-
-    switch (Math.floor(Math.random() * 2)) {
-    case 0:
-      return {
-        turn: 0,
-        steps: Math.floor(Math.random() * 10) + 10,
-        stepsDone: 0
-      };
-    case 1:
-      return {
-        steps: Math.floor(Math.random() * 15) + 15,
-        stepsDone: 0,
-        turn: ((Math.random() * 0.02) + 0.01) * sign
-      };
-    }
-  }
-
-  function generateTrackPiece(even: boolean): TrackPiece {
-    let colorIdx: number, elevation: number, features: TrackFeature[];
-
-    trackFeatures.hill = generateHillFeature(trackFeatures.hill);
-    trackFeatures.turn = generateTurnFeature(trackFeatures.turn);
+    elevation = interpolateTrackElevation(trackFeatures.hill);
 
     if (even) {
-      colorIdx = 0;
+      features = TRACK_PIECE_EVEN_FEATURES;
     } else {
-      colorIdx = 1;
+      features = TRACK_PIECE_ODD_FEATURES;
     }
-
-    // Calculate elevation based on hill feature
-    elevation = (
-      Math.sin(
-        (
-          Math.PI *
-          ((trackFeatures.hill.stepsDone + 1) / trackFeatures.hill.steps)
-        ) - (Math.PI / 2)
-      ) * trackFeatures.hill.elevation
-    ) - (
-      Math.sin(
-        (
-          Math.PI *
-          (trackFeatures.hill.stepsDone / trackFeatures.hill.steps)
-        ) - (Math.PI / 2)
-      ) * trackFeatures.hill.elevation
-    );
 
     trackFeatures.hill.stepsDone += 1;
     trackFeatures.turn.stepsDone += 1;
 
-    if (even) {
-      features = [
-        {
-          width: 0.05,
-          color: sideColors[colorIdx]
-        },
-        {
-          width: 0.9,
-          color: trackColors[colorIdx]
-        },
-        {
-          width: 0.05,
-          color: sideColors[colorIdx]
-        }
-      ];
-    } else {
-      features = [
-        {
-          width: 0.05,
-          color: sideColors[colorIdx]
-        },
-        {
-          width: 0.425,
-          color: trackColors[colorIdx]
-        },
-        {
-          width: 0.05,
-          color: [0.867, 0.867, 0.867]
-        },
-        {
-          width: 0.425,
-          color: trackColors[colorIdx]
-        },
-        {
-          width: 0.05,
-          color: sideColors[colorIdx]
-        }
-      ];
-    }
-
     return {
       elevation: elevation,
-      turn: trackFeatures.turn.turn,
-      background: grassColors[colorIdx],
+      turn: trackFeatures.turn.change,
+      background: GRASS_COLORS[even ? 0 : 1],
       features: features,
       even: even
     };
@@ -213,7 +166,7 @@ namespace App {
     let
       hCoef = (canvas.width / 3) / canvas.height,
       wCoef = 1.5,
-      x: number, zCoef;
+      zCoef: number;
 
     if (vec3[2] > 0) {
       zCoef = vec3[2] + 1;
@@ -221,10 +174,8 @@ namespace App {
       zCoef = -1 / (vec3[2] - 1);
     }
 
-    x = (vec3[0] as number * wCoef) / zCoef;
-
     return [
-      x,
+      (vec3[0] as number * wCoef) / zCoef,
       (((vec3[1] / zCoef) + 1) * hCoef) - 1
     ];
   }
@@ -242,7 +193,7 @@ namespace App {
     return newPoint;
   }
 
-  function interpolateCameraY(cameraZ: number) {
+  function interpolateCameraY(cameraZ: number, offsets: TrackOffsets) {
     let
       interpolationCoef: number,
       bottomPieceIdx: number,
@@ -251,26 +202,44 @@ namespace App {
       i: number,
       cameraY: number;
 
-    interpolationCoef = (cameraZ % trackPieceL) / trackPieceL;
-    bottomPieceIdx = Math.floor(cameraZ / trackPieceL);
+    interpolationCoef = (cameraZ % TRACK_PIECE_LENGTH) / TRACK_PIECE_LENGTH;
+    bottomPieceIdx = Math.floor(cameraZ / TRACK_PIECE_LENGTH);
     bottomPiece = track[bottomPieceIdx];
 
     bottomPieceY = 0;
     for (i = 0; i < bottomPieceIdx; i += 1) {
-      bottomPieceY += track[i].elevation - elevationOffset;
+      bottomPieceY += track[i].elevation - offsets.elevation;
     }
 
-    cameraY = (bottomPiece.elevation - elevationOffset) * interpolationCoef + bottomPieceY + 1;
+    cameraY = (bottomPiece.elevation - offsets.elevation) * interpolationCoef + bottomPieceY + 1;
 
     return cameraY;
   }
 
+  function interpolateTrackElevation(hillFeature: TrackGenerationFeature) {
+    return (
+      Math.sin(
+        (
+          Math.PI *
+          ((hillFeature.stepsDone + 1) / hillFeature.steps)
+        ) - (Math.PI / 2)
+      ) * hillFeature.change
+    ) - (
+      Math.sin(
+        (
+          Math.PI *
+          (hillFeature.stepsDone / hillFeature.steps)
+        ) - (Math.PI / 2)
+      ) * hillFeature.change
+    );
+  }
+
   function interpolateElevationOffset(last: number, now: number, cameraZ: number) {
-    let interpolationCoef = (cameraZ % trackPieceL) / trackPieceL;
+    let interpolationCoef = (cameraZ % TRACK_PIECE_LENGTH) / TRACK_PIECE_LENGTH;
     return ((now - last) * interpolationCoef + last);
   }
 
-  function build3DTrack(track: TrackPiece[]) {
+  function build3DTrack(track: TrackPiece[], offsets: TrackOffsets) {
     let
       threeDTrack = [] as Polygon[],
       combinedElevation = 0,
@@ -282,13 +251,13 @@ namespace App {
       i: number, j: number, y1: number, y2: number, z1: number, z2: number,
       x1Offset: number, x2Offset: number;
 
-    combinedTurn    += turnOffset;
-    combinedXOffset += turnOffset;
+    combinedTurn    += offsets.turn;
+    combinedXOffset += offsets.turn;
 
     for (i = 0; i < track.length; i += 1) {
-      combinedElevation += track[i].elevation - elevationOffset;
+      combinedElevation += track[i].elevation - offsets.elevation;
 
-      if (i > Math.floor(stepsMoved / stepsPerPiece)) {
+      if (i > Math.floor(stepsMoved / STEPS_PER_PIECE)) {
         combinedTurn += track[i].turn;
         combinedXOffset += combinedTurn;
       }
@@ -299,10 +268,10 @@ namespace App {
 
       x1Offset = combinedXOffset - combinedTurn;
       x2Offset = combinedXOffset;
-      y1 = combinedElevation - (piece.elevation - elevationOffset);
+      y1 = combinedElevation - (piece.elevation - offsets.elevation);
       y2 = combinedElevation;
-      z1 = i * trackPieceL;
-      z2 = (i + 1) * trackPieceL;
+      z1 = i * TRACK_PIECE_LENGTH;
+      z2 = (i + 1) * TRACK_PIECE_LENGTH;
 
       // Background
       threeDTrack.push({
@@ -343,7 +312,7 @@ namespace App {
         featureXOffset += feature.width;
       }
 
-      combinedElevation -= (piece.elevation - elevationOffset);
+      combinedElevation -= (piece.elevation - offsets.elevation);
       combinedXOffset   -= combinedTurn;
       combinedTurn      -= piece.turn;
     }
@@ -356,14 +325,15 @@ namespace App {
       invisiblePieces: number,
       piecesToRemove: number,
       i: number,
-      lastPieceEven: boolean;
+      lastPieceEven: boolean,
+      offsets: TrackOffsets;
 
     // Advance position
     stepsMoved += 1;
-    camera[2] = stepsMoved * speed;
+    camera[2] = stepsMoved * SPEED;
 
     // Remove old track pieces, add new ones
-    piecesToRemove = Math.floor(stepsMoved / stepsPerPiece) - 2;
+    piecesToRemove = Math.floor(stepsMoved / STEPS_PER_PIECE) - 2;
     lastPieceEven = track[track.length - 1].even;
 
     if (piecesToRemove > 0) {
@@ -371,46 +341,50 @@ namespace App {
 
       for (i = 0; i < piecesToRemove; i += 1) {
         lastPieceEven = !lastPieceEven;
-        track.push(generateTrackPiece(lastPieceEven));
+        track.push(generateTrackPiece(lastPieceEven, trackFeatures));
       }
 
-      stepsMoved -= piecesToRemove * stepsPerPiece;
-      camera[2] = stepsMoved * speed;
+      stepsMoved -= piecesToRemove * STEPS_PER_PIECE;
+      camera[2] = stepsMoved * SPEED;
     }
 
+    offsets = {
+      elevation: 0,
+      turn: 0
+    };
+
     // Update elevation offset
-    elevationOffset = interpolateElevationOffset(
+    offsets.elevation = interpolateElevationOffset(
       (track[0].elevation + track[1].elevation + track[2].elevation + track[3].elevation + track[4].elevation) / 5,
       (track[1].elevation + track[2].elevation + track[3].elevation + track[4].elevation + track[5].elevation) / 5,
       camera[2]
     );
 
     // Update turn offset
-    invisiblePieces = Math.floor(stepsMoved / stepsPerPiece);
-    turnOffset = (1 - ((stepsMoved % stepsPerPiece) / stepsPerPiece)) * track[invisiblePieces].turn;
+    invisiblePieces = Math.floor(stepsMoved / STEPS_PER_PIECE);
+    offsets.turn = (1 - ((stepsMoved % STEPS_PER_PIECE) / STEPS_PER_PIECE)) * track[invisiblePieces].turn;
 
     // Interpolate camera Y
-    camera[1] = interpolateCameraY(camera[2]);
+    camera[1] = interpolateCameraY(camera[2], offsets);
+
+    // Build 3D track
+    return build3DTrack(track, offsets);
   }
 
-  function render() {
+  function render(polygons: Polygon[]) {
     let
       polygon: Polygon,
       point: number[],
-      threeDTrack: Polygon[],
       i: number, j: number;
 
-    update();
-    threeDTrack = build3DTrack(track);
-
-    for (i = 0; i < threeDTrack.length; i += 1) {
-      polygon = threeDTrack[i];
+    for (i = 0; i < polygons.length; i += 1) {
+      polygon = polygons[i];
 
       for (j = 0; j < polygon.points.length; j += 1) {
         point = transformToCamera(polygon.points[j].slice(0));
         point = projectVec3(point);
 
-        pointsArray[j * 2]     = point[0];
+        pointsArray[j * 2] = point[0];
         pointsArray[j * 2 + 1] = point[1];
       }
 
@@ -422,8 +396,15 @@ namespace App {
       gl.bufferData(gl.ARRAY_BUFFER, pointsArray, gl.STATIC_DRAW);
       gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
+  }
 
-    window.requestAnimationFrame(render);
+  function nextFrame() {
+    let threeDTrack: Polygon[];
+
+    threeDTrack = update();
+    render(threeDTrack);
+
+    window.requestAnimationFrame(nextFrame);
   }
 
   // Initialize stuff
@@ -441,21 +422,13 @@ namespace App {
 
   // Initial track features
   trackFeatures = {
-    hill: {
-      steps: 0,
-      stepsDone: 0,
-      elevation: 0
-    },
-    turn: {
-      steps: 0,
-      stepsDone: 0,
-      turn: 0
-    }
+    hill: { steps: 0, stepsDone: 0, change: 0 },
+    turn: { steps: 0, stepsDone: 0, change: 0 }
   };
 
   // Initial track
-  for (i = 0; i < maxPiecesVisible; i += 1) {
-    track.push(generateTrackPiece(i % 2 === 0));
+  for (i = 0; i < MAX_PIECES_VISIBLE; i += 1) {
+    track.push(generateTrackPiece(i % 2 === 0, trackFeatures));
   }
 
   // Resize the canvas to fill browser window dynamically
@@ -463,5 +436,5 @@ namespace App {
 
   // Start
   resizeCanvas();
-  render();
+  nextFrame();
 }
