@@ -15,6 +15,15 @@ var GL;
         return gl;
     }
     GL.initWebGL = initWebGL;
+    function perspectiveMatrix() {
+        return new Float32Array([
+            1.5, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 1,
+            0, 0, 0, 0
+        ]);
+    }
+    GL.perspectiveMatrix = perspectiveMatrix;
     function initShaders(gl) {
         var fragmentShader = getShader(gl, 'shader-fs'), vertexShader = getShader(gl, 'shader-vs'), shaderProgram;
         shaderProgram = gl.createProgram();

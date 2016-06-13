@@ -77,11 +77,11 @@ var App;
         }
         return TrackOffsets;
     }());
-    var canvas, trackFeatures, gl, shaderProgram, positionLocation, colorLocation, buffer, track = [], camera = [0, 0, 0], stepsMoved = 0, pointsArray = new Float32Array(8), i;
+    var canvas, trackFeatures, gl, shaderProgram, positionLocation, colorLocation, projectionLocation, buffer, track = [], camera = [0, 0, 0], stepsMoved = 0, pointsArray = new Float32Array(12), i;
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.viewport(0, 0, canvas.width, canvas.width / 4);
     }
     function generateTrackFeature(current, max, min) {
         var sign;
@@ -129,19 +129,6 @@ var App;
             features: features,
             even: even
         };
-    }
-    function projectVec3(vec3) {
-        var hCoef = (canvas.width / 3) / canvas.height, wCoef = 1.5, zCoef;
-        if (vec3[2] > 0) {
-            zCoef = vec3[2] + 1;
-        }
-        else {
-            zCoef = -1 / (vec3[2] - 1);
-        }
-        return [
-            (vec3[0] * wCoef) / zCoef,
-            (((vec3[1] / zCoef) + 1) * hCoef) - 1
-        ];
     }
     function transformToCamera(point) {
         var newPoint = point.slice(0);
@@ -269,11 +256,12 @@ var App;
             polygon = polygons[i];
             for (j = 0; j < polygon.points.length; j += 1) {
                 point = transformToCamera(polygon.points[j].slice(0));
-                point = projectVec3(point);
-                pointsArray[j * 2] = point[0];
-                pointsArray[j * 2 + 1] = point[1];
+                pointsArray[j * 3] = point[0];
+                pointsArray[j * 3 + 1] = point[1];
+                pointsArray[j * 3 + 2] = point[2];
             }
             gl.uniform4f(colorLocation, polygon.color[0], polygon.color[1], polygon.color[2], 1);
+            gl.uniformMatrix4fv(projectionLocation, false, GL.perspectiveMatrix());
             gl.bufferData(gl.ARRAY_BUFFER, pointsArray, gl.STATIC_DRAW);
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
         }
@@ -290,10 +278,11 @@ var App;
     shaderProgram = GL.initShaders(gl);
     positionLocation = gl.getAttribLocation(shaderProgram, 'a_position');
     colorLocation = gl.getUniformLocation(shaderProgram, 'u_color');
+    projectionLocation = gl.getUniformLocation(shaderProgram, 'u_projection');
     buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
     // Initial track features
     trackFeatures = {
         hill: { steps: 0, stepsDone: 0, change: 0 },

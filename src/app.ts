@@ -94,17 +94,18 @@ namespace App {
     shaderProgram: WebGLProgram,
     positionLocation: number,
     colorLocation: WebGLUniformLocation,
+    projectionLocation: WebGLUniformLocation,
     buffer: WebGLBuffer,
     track           = [] as TrackPiece[],
     camera          = [0, 0, 0],
     stepsMoved      = 0,
-    pointsArray     = new Float32Array(8),
+    pointsArray     = new Float32Array(12),
     i: number;
 
   function resizeCanvas() {
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.viewport(0, 0, canvas.width, canvas.width / 4);
   }
 
   function generateTrackFeature(current: TrackGenerationFeature, max: number, min: number) {
@@ -160,24 +161,6 @@ namespace App {
       features: features,
       even: even
     };
-  }
-
-  function projectVec3(vec3: number[]) {
-    let
-      hCoef = (canvas.width / 3) / canvas.height,
-      wCoef = 1.5,
-      zCoef: number;
-
-    if (vec3[2] > 0) {
-      zCoef = vec3[2] + 1;
-    } else {
-      zCoef = -1 / (vec3[2] - 1);
-    }
-
-    return [
-      (vec3[0] as number * wCoef) / zCoef,
-      (((vec3[1] / zCoef) + 1) * hCoef) - 1
-    ];
   }
 
   function transformToCamera(point: number[]) {
@@ -382,15 +365,20 @@ namespace App {
 
       for (j = 0; j < polygon.points.length; j += 1) {
         point = transformToCamera(polygon.points[j].slice(0));
-        point = projectVec3(point);
 
-        pointsArray[j * 2] = point[0];
-        pointsArray[j * 2 + 1] = point[1];
+        pointsArray[j * 3]     = point[0];
+        pointsArray[j * 3 + 1] = point[1];
+        pointsArray[j * 3 + 2] = point[2];
       }
 
       gl.uniform4f(
         colorLocation,
         polygon.color[0], polygon.color[1], polygon.color[2], 1
+      );
+
+      gl.uniformMatrix4fv(
+        projectionLocation, false,
+        GL.perspectiveMatrix()
       );
 
       gl.bufferData(gl.ARRAY_BUFFER, pointsArray, gl.STATIC_DRAW);
@@ -408,17 +396,18 @@ namespace App {
   }
 
   // Initialize stuff
-  canvas           = document.getElementById('game') as HTMLCanvasElement;
-  gl               = GL.initWebGL(canvas);
-  shaderProgram    = GL.initShaders(gl);
-  positionLocation = gl.getAttribLocation(shaderProgram, 'a_position');
-  colorLocation    = gl.getUniformLocation(shaderProgram, 'u_color');
+  canvas             = document.getElementById('game') as HTMLCanvasElement;
+  gl                 = GL.initWebGL(canvas);
+  shaderProgram      = GL.initShaders(gl);
+  positionLocation   = gl.getAttribLocation(shaderProgram, 'a_position');
+  colorLocation      = gl.getUniformLocation(shaderProgram, 'u_color');
+  projectionLocation = gl.getUniformLocation(shaderProgram, 'u_projection');
 
   buffer = gl.createBuffer();
 
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.enableVertexAttribArray(positionLocation);
-  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
 
   // Initial track features
   trackFeatures = {

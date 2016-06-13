@@ -16,6 +16,15 @@ namespace GL {
     return gl;
   }
 
+  export function perspectiveMatrix() {
+    return new Float32Array([
+      1.5, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 1,
+      0, 0, 0, 0
+    ]);
+  }
+
   export function initShaders(gl: WebGLRenderingContext) {
     let
       fragmentShader = getShader(gl, 'shader-fs'),
