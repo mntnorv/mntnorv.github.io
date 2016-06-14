@@ -3,7 +3,7 @@ namespace GL {
     let gl: WebGLRenderingContext = null;
 
     try {
-      gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext;
+      gl = (canvas.getContext('webgl', { antialias: false }) || canvas.getContext('experimental-webgl', { antialias: false })) as WebGLRenderingContext;
     } catch(e) {}
 
     if (gl) {

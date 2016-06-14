@@ -88,6 +88,8 @@ namespace App {
   }
 
   let
+    realCanvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     trackFeatures: TrackGenerationFeatures,
     gl: WebGLRenderingContext,
@@ -96,6 +98,7 @@ namespace App {
     colorLocation: WebGLUniformLocation,
     projectionLocation: WebGLUniformLocation,
     buffer: WebGLBuffer,
+    paused          = false,
     track           = [] as TrackPiece[],
     camera          = [0, 0, 0],
     stepsMoved      = 0,
@@ -103,9 +106,17 @@ namespace App {
     i: number;
 
   function resizeCanvas() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    gl.viewport(0, 0, canvas.width, canvas.width / 4);
+    canvas.width  = Math.floor(window.innerWidth / 4);
+    canvas.height = Math.floor(window.innerHeight / 4);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+
+    realCanvas.width  = window.innerWidth;
+    realCanvas.height = window.innerHeight;
+
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.msImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = false;
   }
 
   function generateTrackFeature(current: TrackGenerationFeature, max: number, min: number) {
@@ -253,8 +264,8 @@ namespace App {
       x2Offset = combinedXOffset;
       y1 = combinedElevation - (piece.elevation - offsets.elevation);
       y2 = combinedElevation;
-      z1 = i * TRACK_PIECE_LENGTH;
-      z2 = (i + 1) * TRACK_PIECE_LENGTH;
+      z1 = i * TRACK_PIECE_LENGTH + 1;
+      z2 = (i + 1) * TRACK_PIECE_LENGTH + 1;
 
       // Background
       threeDTrack.push({
@@ -360,6 +371,8 @@ namespace App {
       point: number[],
       i: number, j: number;
 
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
     for (i = 0; i < polygons.length; i += 1) {
       polygon = polygons[i];
 
@@ -384,19 +397,35 @@ namespace App {
       gl.bufferData(gl.ARRAY_BUFFER, pointsArray, gl.STATIC_DRAW);
       gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
+
+    ctx.clearRect(0, 0, realCanvas.width, realCanvas.height);
+    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height,
+                  0, 0, realCanvas.width, realCanvas.height);
   }
 
-  function nextFrame() {
+  export function playPause() {
+    paused = !paused;
+
+    if (!paused) {
+      requestAnimationFrame(nextFrame);
+    }
+  }
+
+  export function nextFrame() {
     let threeDTrack: Polygon[];
 
     threeDTrack = update();
     render(threeDTrack);
 
-    window.requestAnimationFrame(nextFrame);
+    if (!paused) {
+      window.requestAnimationFrame(nextFrame);
+    }
   }
 
   // Initialize stuff
-  canvas             = document.getElementById('game') as HTMLCanvasElement;
+  realCanvas         = document.getElementById('game') as HTMLCanvasElement;
+  ctx                = realCanvas.getContext('2d');
+  canvas             = document.createElement('canvas');
   gl                 = GL.initWebGL(canvas);
   shaderProgram      = GL.initShaders(gl);
   positionLocation   = gl.getAttribLocation(shaderProgram, 'a_position');
@@ -405,6 +434,7 @@ namespace App {
 
   buffer = gl.createBuffer();
 
+  gl.clearColor(0, 0, 0, 0);
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.enableVertexAttribArray(positionLocation);
   gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);

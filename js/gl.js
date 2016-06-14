@@ -3,7 +3,7 @@ var GL;
     function initWebGL(canvas) {
         var gl = null;
         try {
-            gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+            gl = (canvas.getContext('webgl', { antialias: false }) || canvas.getContext('experimental-webgl', { antialias: false }));
         }
         catch (e) { }
         if (gl) {

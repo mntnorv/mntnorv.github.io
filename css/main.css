@@ -4,29 +4,38 @@ html, body {
 
 body {
   font-family: 'Roboto', sans-serif;
-  
+
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  
+
   -webkit-box-pack: center;
   -webkit-justify-content: center;
       -ms-flex-pack: center;
           justify-content: center;
-  
+
   -webkit-box-align: center;
   -webkit-align-items: center;
       -ms-flex-align: center;
           align-items: center;
 }
 
+canvas, img {
+  image-rendering: optimizeSpeed;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-contrast;
+  image-rendering: pixelated;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
 .background {
   position: absolute;
-  
+
   top: 0;
   left: 0;
-  
+
   width: 100%;
   height: 100%;
 }
