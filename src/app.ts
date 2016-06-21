@@ -67,18 +67,18 @@ namespace App {
 
         polygons.push({
           points: [
-            points2D[i * POINTS_X + j],
-            points2D[i * POINTS_X + (j + 1)],
-            points2D[(i + 1) * POINTS_X + j]
+            points2D[(i * POINTS_X) + j],
+            points2D[(i * POINTS_X) + (j + 1)],
+            points2D[((i + 1) * POINTS_X) + j]
           ],
           color: '#0000' + color
         });
 
         polygons.push({
           points: [
-            points2D[i * POINTS_X + (j + 1)],
-            points2D[(i + 1) * POINTS_X + j],
-            points2D[(i + 1) * POINTS_X + (j + 1)]
+            points2D[(i * POINTS_X) + (j + 1)],
+            points2D[((i + 1) * POINTS_X) + j],
+            points2D[((i + 1) * POINTS_X) + (j + 1)]
           ],
           color: '#0000' + color
         });
@@ -87,6 +87,7 @@ namespace App {
 
     for (i = 0; i < polygons.length; i++) {
       ctx.fillStyle = polygons[i].color;
+      ctx.strokeStyle = polygons[i].color;
       ctx.beginPath();
 
       for (j = 0; j < polygons[i].points.length; j++) {
@@ -99,7 +100,9 @@ namespace App {
         }
       }
 
+      ctx.closePath();
       ctx.fill();
+      ctx.stroke();
     }
   }
 
