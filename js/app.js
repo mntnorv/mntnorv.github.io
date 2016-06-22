@@ -22,25 +22,25 @@ var App;
     function update() {
         var scene, qPoints, i, j, i_offset, j_offset;
         scene = [];
-        qPoints = [];
         for (i = 0; i < (POINTS_Y - 1); i++) {
             for (j = 0; j < (POINTS_X - 1); j++) {
                 // Generate points for one quadrangle
+                qPoints = [];
                 for (i_offset = 0; i_offset < 2; i_offset++) {
                     for (j_offset = 0; j_offset < 2; j_offset++) {
                         qPoints[i_offset * 2 + j_offset] = {
-                            x: ((j + j_offset) / (POINTS_X - 1)) * 2 - 1,
-                            y: ((i + i_offset) / (POINTS_Y - 1)) * 2 - 1,
+                            x: ((j + j_offset) / (POINTS_X - 1)) * 4 - 2,
+                            y: ((i + i_offset) / (POINTS_Y - 1)) * 4 - 2,
                             z: heights[(i + i_offset) * POINTS_X + (j + j_offset)]
                         };
                     }
                 }
                 scene.push({
-                    color: [0, 0, 255],
+                    color: [0, 0, 0.75],
                     points: [qPoints[0], qPoints[1], qPoints[2]]
                 });
                 scene.push({
-                    color: [0, 0, 255],
+                    color: [0, 0, 1],
                     points: [qPoints[1], qPoints[2], qPoints[3]]
                 });
             }
@@ -58,9 +58,9 @@ var App;
                 pointsArray[j * 3 + 2] = point.z;
             }
             gl.uniform4f(colorLocation, polygon.color[0], polygon.color[1], polygon.color[2], 1);
-            gl.uniformMatrix4fv(projectionLocation, false, GL.perspectiveMatrix());
+            gl.uniformMatrix4fv(projectionLocation, false, GL.perspectiveMatrix(canvas.width, canvas.height));
             gl.bufferData(gl.ARRAY_BUFFER, pointsArray, gl.STATIC_DRAW);
-            gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
         }
     }
     function nextFrame() {
@@ -83,7 +83,7 @@ var App;
     // Generate initial heights
     heights = [];
     for (i = 0; i < POINTS_X * POINTS_Y; i++) {
-        heights[i] = 0;
+        heights[i] = Math.random() * -0.2;
     }
     // Resize the canvas to fill browser window dynamically
     window.addEventListener('resize', resizeCanvas, false);

@@ -15,8 +15,8 @@ var GL;
         return gl;
     }
     GL.initWebGL = initWebGL;
-    function perspectiveMatrix() {
-        var matrices, result, i;
+    function perspectiveMatrix(width, height) {
+        var matrices, result, i, xScale, yScale;
         result = [
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -31,20 +31,22 @@ var GL;
             0, 0, 1, 0,
             0, 0, 0, 1
         ]);
-        // Rotate -45 degrees around X axis
+        // Rotate -90 degrees around X axis
         matrices.push([
             1, 0, 0, 0,
-            0, Math.cos(-Math.PI / 4), -Math.sin(-Math.PI / 4), 0,
-            0, Math.sin(-Math.PI / 4), Math.cos(-Math.PI / 4), 0,
+            0, Math.cos(Math.PI / 4), -Math.sin(Math.PI / 4), 0,
+            0, Math.sin(Math.PI / 4), Math.cos(Math.PI / 4), 0,
             0, 0, 0, 1
         ]);
-        // Perspective
-        // matrices.push([
-        //   1, 0, 0, 0,
-        //   0, 1, 0, 0,
-        //   0, 0, 1, 1,
-        //   0, 0, 0, 0
-        // ]);
+        // Scale Y to show 1:1 grid
+        xScale = width > height ? 1 : height / width;
+        yScale = height > width ? 1 : width / height;
+        matrices.push([
+            xScale, 0, 0, 0,
+            0, yScale, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 1
+        ]);
         for (i = 0; i < matrices.length; i++) {
             result = matmul(result, matrices[i], 4);
         }
