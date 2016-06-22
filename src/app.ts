@@ -128,7 +128,7 @@ namespace App {
   // Generate initial heights
   heights = []
   for (i = 0; i < POINTS_X * POINTS_Y; i++) {
-    heights[i] = Math.random() * 0.2;
+    heights[i] = 0;
   }
 
   // Resize the canvas to fill browser window dynamically

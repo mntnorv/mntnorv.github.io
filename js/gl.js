@@ -16,14 +16,54 @@ var GL;
     }
     GL.initWebGL = initWebGL;
     function perspectiveMatrix() {
-        return new Float32Array([
+        var matrices, result, i;
+        result = [
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1
+        ];
+        matrices = [];
+        // Rotate 45 degrees around Z axis
+        matrices.push([
+            Math.cos(Math.PI / 4), -Math.sin(Math.PI / 4), 0, 0,
+            Math.sin(Math.PI / 4), Math.cos(Math.PI / 4), 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
         ]);
+        // Rotate -45 degrees around X axis
+        matrices.push([
+            1, 0, 0, 0,
+            0, Math.cos(-Math.PI / 4), -Math.sin(-Math.PI / 4), 0,
+            0, Math.sin(-Math.PI / 4), Math.cos(-Math.PI / 4), 0,
+            0, 0, 0, 1
+        ]);
+        // Perspective
+        // matrices.push([
+        //   1, 0, 0, 0,
+        //   0, 1, 0, 0,
+        //   0, 0, 1, 1,
+        //   0, 0, 0, 0
+        // ]);
+        for (i = 0; i < matrices.length; i++) {
+            result = matmul(result, matrices[i], 4);
+        }
+        return new Float32Array(result);
     }
     GL.perspectiveMatrix = perspectiveMatrix;
+    function matmul(A, B, n) {
+        var C = new Array(n * n), i = 0, j = 0, k = 0;
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < n; j++) {
+                var total = 0;
+                for (k = 0; k < n; k++) {
+                    total += A[i * n + k] * B[k * n + j];
+                }
+                C[i * n + j] = total;
+            }
+        }
+        return C;
+    }
     function initShaders(gl) {
         var fragmentShader = getShader(gl, 'shader-fs'), vertexShader = getShader(gl, 'shader-vs'), shaderProgram;
         shaderProgram = gl.createProgram();
