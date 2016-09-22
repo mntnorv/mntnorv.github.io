@@ -21,62 +21,50 @@ body {
           align-items: center;
 }
 
-.background {
-  position: absolute;
-
-  top: 0;
-  left: 0;
-
-  width: 100%;
-  height: 100%;
-}
-
-#content {
-  z-index: 1;
-}
-
-img {
-  height: 50%;
-}
-
 .title {
   font-size: 100px;
   line-height: 95%;
 }
 
-.subtitle > * {
-  vertical-align: top;
-}
-
-.subtitle .text {
+.subtitle {
+  vertical-align: middle;
   display: inline-block;
   color: #999;
 
   line-height: 20px;
-  padding-top: 8px;
+  padding: 8px 0;
   font-size: 20px;
 }
 
-.icon {
-  display: inline-block;
-
-  width: 32px;
-  height: 32px;
-  background-size: 32px 32px;
-
-  padding-right: 10px;
-  background-repeat: no-repeat;
+.mn-link {
+  position: relative;
+  padding: 5px;
+  margin-top: 8px;
 }
 
-a.icon-link {
-  display: inline-block;
-  text-decoration: none;
-  color: transparent;
-  height: 32px;
+.mn-link > .mn-link-background {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+
+  background-color: red;
+
+  opacity: 0;
+  transform: translate(7px, 7px);
+
+  transition: all 0.2s;
 }
 
-.icon.linkedin {
-  background-image: url(../img/linkedin.png);
+.mn-link:hover > .mn-link-background {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.mn-link > .mn-link-background.no-transition {
+  transform: translate(0, 0);
 }
 
 @media screen and (max-width: 410px) {
@@ -84,20 +72,9 @@ a.icon-link {
     font-size: 50px;
   }
 
-  .subtitle .text {
+  .subtitle {
     line-height: 12px;
     padding-top: 7px;
     font-size: 12px;
-  }
-
-  .icon {
-    width: 24px;
-    height: 24px;
-    background-size: 24px 24px;
-    padding-right: 5px;
-  }
-
-  a.icon-link {
-    height: 24px;
   }
 }
