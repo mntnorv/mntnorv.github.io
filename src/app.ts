@@ -1,40 +1,9 @@
-/// <reference path="gl.ts"/>
-
 namespace App {
-  // const POINTS_X = 20;
-  // const POINTS_Y = 20;
-
-  // class Point {
-  //   x: number;
-  //   y: number;
-  //   z: number;
-  // }
-
-  // class Polygon {
-  //   color: number[];
-  //   points: Point[];
-  // }
-
-  // let
-  //   canvas: HTMLCanvasElement,
-  //   gl: WebGLRenderingContext,
-  //   shaderProgram: WebGLProgram,
-  //   positionLocation: number,
-  //   colorLocation: WebGLUniformLocation,
-  //   projectionLocation: WebGLUniformLocation,
-  //   buffer: WebGLBuffer,
-  //   heights: number[],
-  //   pointsArray = new Float32Array(12),
-  //   i: number, j: number;
-
-  // function resizeCanvas() {
-  //   canvas.width  = window.innerWidth;
-  //   canvas.height = window.innerHeight;
-  //   gl.viewport(0, 0, canvas.width, canvas.height);
-  // }
   let
     lastMouseX = 0,
-    lastMouseY = 0;
+    lastMouseY = 0,
+    links      = document.querySelectorAll('a.mn-link'),
+    rdx: number, rdy: number;
 
   function nextFrame() {
     window.requestAnimationFrame(nextFrame);
@@ -44,7 +13,7 @@ namespace App {
     let
       dx = e.screenX - lastMouseX,
       dy = e.screenY - lastMouseY,
-      dl: number, rdx: number, rdy: number;
+      dl: number;
 
     dl = Math.sqrt((dx * dx) + (dy * dy));
     rdx = dx / dl;
@@ -52,6 +21,27 @@ namespace App {
 
     lastMouseX = e.screenX;
     lastMouseY = e.screenY;
+  }
+
+  function onHover(e) {
+    let background = e.target.querySelector('.mn-link-background');
+    background.className = 'mn-link-background mn-no-transition';
+    background.style.transform = 'translate(' + rdx + 'px,' + rdy + 'px)';
+    background.className = 'mn-link-background';
+    background.style.transform = 'translate(0px,0px)';
+
+    e.target.className = 'mn-link mn-hover'
+  }
+
+  function onUnhover(e) {
+    let background = e.target.querySelector('.mn-link-background');
+    background.style.transform = 'translate(' + (rdx * 15) + 'px,' + (rdy * 15) + 'px)';
+    e.target.className = 'mn-link'
+  }
+
+  for (var i = links.length - 1; i >= 0; i--) {
+    links[i].addEventListener('mouseenter', onHover);
+    links[i].addEventListener('mouseleave', onUnhover);
   }
 
   // Resize the canvas to fill browser window dynamically

@@ -53,18 +53,15 @@ body {
   background-color: red;
 
   opacity: 0;
-  transform: translate(7px, 7px);
-
   transition: all 0.2s;
 }
 
-.mn-link:hover > .mn-link-background {
+.mn-link.mn-hover > .mn-link-background {
   opacity: 1;
-  transform: translate(0, 0);
 }
 
-.mn-link > .mn-link-background.no-transition {
-  transform: translate(0, 0);
+.mn-link.mn-hover > .mn-link-background.mn-no-transition {
+  transition: none;
 }
 
 @media screen and (max-width: 410px) {
